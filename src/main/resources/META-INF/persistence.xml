@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.2" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence           http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
+  <persistence-unit name="com.mycompany_BD_MuseoMAHN_Proyecto2_jar_1.0-SNAPSHOTPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <class>persistencia.Comisionestarjetas</class>
+    <class>persistencia.EntradaSalas</class>
+    <class>persistencia.Precios</class>
+    <class>persistencia.Colecciones</class>
+    <class>persistencia.Salas</class>
+    <class>persistencia.Tematicas</class>
+    <class>persistencia.RegistroComisiones</class>
+    <class>persistencia.Entradas</class>
+    <class>persistencia.Museos</class>
+    <class>persistencia.Valoraciones</class>
+    <class>persistencia.Especies</class>
+    <class>persistencia.ImagenesSalas</class>
+    <properties>
+      <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/jdba_museo_mahn?zeroDateTimeBehavior=CONVERT_TO_NULL"/>
+      <property name="javax.persistence.jdbc.user" value="root"/>
+      <property name="javax.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+      <property name="javax.persistence.jdbc.password" value="mysql1234"/>
+    </properties>
+  </persistence-unit>
+</persistence>
