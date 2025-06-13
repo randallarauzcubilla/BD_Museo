@@ -1,6 +1,7 @@
 package com.mycompany.bd_museomahn_proyecto2;
 
 import controladores.MuseosJpaController;
+import controladores.SalasJpaController;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -14,8 +15,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -24,6 +27,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
@@ -121,9 +125,12 @@ public class MantenimientoController implements Initializable {
     private TableView<Comisionestarjetas> tvComisionesTarjeta;
     private boolean modoEdicion = false;
     private Museos museoSeleccionado = null;
+    private Salas salaSeleccionada = null;
 
     //INSTANCIAS GLOBALES
     private MuseosJpaController museosJpa = new MuseosJpaController();
+    private SalasJpaController salasJpa = new SalasJpaController();
+
     @FXML
     private ComboBox<String> cbTipoMuseo;
     @FXML
@@ -142,6 +149,10 @@ public class MantenimientoController implements Initializable {
     private Tab tapPrecios;
     @FXML
     private Tab tapComisionesTarjeta;
+    @FXML
+    private ComboBox<String> cbTipoTematicaSalas;
+    @FXML
+    private ComboBox<Museos> cbElegirMuseoSalas;
 
     /**
      * Initializes the controller class.
@@ -152,26 +163,44 @@ public class MantenimientoController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         cbEntidadesMantenimiento.setItems(FXCollections.observableArrayList(
-                "MUSEOS", "Salas", "Colecciones", "Especies", "Temáticas", "Precios", "Comisiones de tarjetas"
+                "MUSEOS", "SALAS", "COLECCIONES", "ESPECIES", "TEMÁTICAS", "PRECIOS", "COMISIONES DE TARJETAS"
         ));
 
+        // Listener para cuando se cambie de pestaña (Tabs)
         tvVerElementosClases.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
             if (newTab == tapMuseos) {
                 cargarDatosMuseos();
+            } else if (newTab == tapSalas) {
+                cargarDatosSalas();
             }
+            // ...otros tabs si tienes
         });
 
+        // Listener para ComboBox de entidad seleccionada
         cbEntidadesMantenimiento.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 actualizarCamposPorEntidad(newVal);
                 cargarFiltrosPorEntidad(newVal);
                 limpiarCampos();
+                // Carga inicial de datos según entidad
+                switch (newVal) {
+                    case "MUSEOS":
+                        cargarDatosMuseos();
+                        tvVerElementosClases.getSelectionModel().select(tapMuseos);
+                        break;
+                    case "SALAS":
+                        cargarDatosSalas();
+                        tvVerElementosClases.getSelectionModel().select(tapSalas);
+                        break;
+                    // Otros casos según tus entidades
+                }
             }
         });
 
+        // Setea por defecto MUSEOS al iniciar
         cbEntidadesMantenimiento.getSelectionModel().select("MUSEOS");
-        tvVerElementosClases.getSelectionModel().select(Museos); // usa el Tab
-        cargarDatosMuseos(); // fuerza la carga al iniciar
+        tvVerElementosClases.getSelectionModel().select(tapMuseos);
+        cargarDatosMuseos();
     }
 
     private String getEntidadSeleccionada() {
@@ -183,92 +212,152 @@ public class MantenimientoController implements Initializable {
 
     @FXML
     private void btnFiltrarOnAction(ActionEvent event) {
-        String entidadSeleccionada = cbEntidadesMantenimiento.getSelectionModel().getSelectedItem();
+        String entidadSeleccionada = obtenerEntidadSeleccionada();
+        String textoFiltro = txtFiltroBusqueda.getText().trim().toLowerCase();
         String filtroSeleccionado = cbFiltroElementos.getSelectionModel().getSelectedItem();
-        String textoBusqueda = txtFiltroBusqueda.getText().toLowerCase();
-
-        if (entidadSeleccionada == null || filtroSeleccionado == null) {
-            System.out.println("No hay un filtro.");
-            return;
-        }
 
         switch (entidadSeleccionada) {
             case "MUSEOS":
-                Collection<Museos> lista = museosJpa.findMuseosEntities();
-                List<Museos> filtrados = lista.stream()
-                        .filter(m -> {
+                List<Museos> listaMuseosFiltrada = museosJpa.findMuseosEntities()
+                        .stream()
+                        .filter(museo -> {
                             switch (filtroSeleccionado) {
                                 case "Nombre":
-                                    return m.getNombre().toLowerCase().contains(textoBusqueda);
+                                    return museo.getNombre().toLowerCase().contains(textoFiltro);
                                 case "Ubicación":
-                                    return m.getUbicacion().toLowerCase().contains(textoBusqueda);
+                                    return museo.getUbicacion().toLowerCase().contains(textoFiltro);
                                 case "Tipo":
-                                    return m.getTipo().toLowerCase().contains(textoBusqueda);
+                                    return museo.getTipo().toLowerCase().contains(textoFiltro);
                                 default:
                                     return true;
                             }
                         })
                         .collect(Collectors.toList());
 
-                tvMuseos.setItems(FXCollections.observableArrayList(filtrados));
-
-                if (filtrados.isEmpty()) {
-                    Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-                    alerta.setTitle("Sin resultados");
-                    alerta.setHeaderText(null);
-                    alerta.setContentText("No se encontraron datos que coincidan con la búsqueda.");
-                    alerta.showAndWait();
-                }
+                tvMuseos.setItems(FXCollections.observableArrayList(listaMuseosFiltrada));
                 break;
 
-            // Agregar casos para otras entidades si es necesario...
+            case "SALAS":
+                List<Salas> listaSalasFiltrada = salasJpa.findSalasEntities()
+                        .stream()
+                        .filter(sala -> {
+                            switch (filtroSeleccionado) {
+                                case "Nombre":
+                                    return sala.getNombre().toLowerCase().contains(textoFiltro);
+                                case "Temática":
+                                    return sala.getTematica().toLowerCase().contains(textoFiltro);
+                                default:
+                                    return true;
+                            }
+                        })
+                        .collect(Collectors.toList());
+
+                tvSalas.setItems(FXCollections.observableArrayList(listaSalasFiltrada));
+                break;
+
+            default:
+                mostrarError("No hay entidad seleccionada para filtrar.");
+                break;
         }
     }
 
     @FXML
     private void btnEditarOnAction(ActionEvent event) {
-        if (getEntidadSeleccionada().equals("MUSEOS")) {
-            museoSeleccionado = tvMuseos.getSelectionModel().getSelectedItem();
-            if (museoSeleccionado != null) {
-                txtCampo1.setText(museoSeleccionado.getNombre());
-                txtCampo2.setText(museoSeleccionado.getTipo());
-                txtCampo3.setText(museoSeleccionado.getUbicacion());
+        String entidad = getEntidadSeleccionada();
 
-                Date fecha = museoSeleccionado.getFechaFundacion();
-                if (fecha != null) {
-                    Instant instant = fecha.toInstant();
-                    LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
-                    datePickerSelect.setValue(localDate);
-                } else {
-                    datePickerSelect.setValue(null);
-                }
+        switch (entidad) {
+            case "MUSEOS":
+                editarMuseo();
+                break;
+            case "SALAS":
+                editarSala();
+                break;
+            // agrega los demás casos para otras entidades
+            default:
+                mostrarError("Entidad no reconocida para edición");
+        }
+    }
 
-                txtCampo4.setText(museoSeleccionado.getDirector());
-                txtCampo5.setText(museoSeleccionado.getSitioWeb());
+    private void editarMuseo() {
+        museoSeleccionado = tvMuseos.getSelectionModel().getSelectedItem();
+        if (museoSeleccionado != null) {
+            txtCampo1.setText(museoSeleccionado.getNombre());
+            txtCampo2.setText(museoSeleccionado.getTipo());
+            txtCampo3.setText(museoSeleccionado.getUbicacion());
 
-                modoEdicion = true;
+            Date fecha = museoSeleccionado.getFechaFundacion();
+            if (fecha != null) {
+                Instant instant = fecha.toInstant();
+                LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+                datePickerSelect.setValue(localDate);
             } else {
-                mostrarError("Debe seleccionar un museo para editar.");
+                datePickerSelect.setValue(null);
             }
+
+            txtCampo4.setText(museoSeleccionado.getDirector());
+            txtCampo5.setText(museoSeleccionado.getSitioWeb());
+
+            modoEdicion = true;
+        } else {
+            mostrarError("Debe seleccionar un museo para editar.");
+        }
+    }
+
+    private void editarSala() {
+        Salas salaSeleccionada = tvSalas.getSelectionModel().getSelectedItem();
+        if (salaSeleccionada != null) {
+            txtCampo1.setText(salaSeleccionada.getNombre());
+            txtAreaDescripcion.setText(salaSeleccionada.getDescripcion());
+            cbTipoTematicaSalas.setValue(salaSeleccionada.getTematica());
+            cbElegirMuseoSalas.setValue(salaSeleccionada.getIdMuseo());
+
+            modoEdicion = true;
+        } else {
+            mostrarError("Debe seleccionar una sala para editar.");
         }
     }
 
     @FXML
     private void btnEliminarOnAction(ActionEvent event) {
-        if (getEntidadSeleccionada().equals("MUSEOS")) {
-            Museos seleccionado = tvMuseos.getSelectionModel().getSelectedItem();
-            if (seleccionado != null) {
-                try {
-                    museosJpa.delete(seleccionado);
-                    cargarDatosMuseos();
-                    mostrarAlerta("Museo eliminado.");
-                    limpiarCampos();
-                } catch (Exception e) {
-                    mostrarError("Error al eliminar museo: " + e.getMessage());
+        String entidad = getEntidadSeleccionada();
+
+        switch (entidad) {
+            case "MUSEOS":
+                Museos museo = tvMuseos.getSelectionModel().getSelectedItem();
+                if (museo != null) {
+                    try {
+                        museosJpa.delete(museo);
+                        cargarDatosMuseos();
+                        mostrarAlerta("Museo eliminado.");
+                        limpiarCampos();
+                    } catch (Exception e) {
+                        mostrarError("Error al eliminar museo: " + e.getMessage());
+                    }
+                } else {
+                    mostrarError("Seleccione un museo para eliminar.");
                 }
-            } else {
-                mostrarError("Seleccione un museo para eliminar.");
-            }
+                break;
+
+            case "SALAS":
+                Salas sala = tvSalas.getSelectionModel().getSelectedItem();
+                if (sala != null) {
+                    try {
+                        salasJpa.delete(sala);
+                        cargarDatosSalas();
+                        mostrarAlerta("Sala eliminada.");
+                        limpiarCampos();
+                    } catch (Exception e) {
+                        mostrarError("Error al eliminar sala: " + e.getMessage());
+                    }
+                } else {
+                    mostrarError("Seleccione una sala para eliminar.");
+                }
+                break;
+
+            // Aquí irán más entidades como Colecciones, Temáticas, etc.
+            default:
+                mostrarError("Entidad no válida para eliminar.");
+                break;
         }
     }
 
@@ -280,8 +369,8 @@ public class MantenimientoController implements Initializable {
             case "MUSEOS":
                 insertarMuseo();
                 break;
-            case "Salas":
-                // insertarSala();
+            case "SALAS":
+                insertarSala();
                 break;
             case "Colecciones":
                 // insertarColeccion();
@@ -321,9 +410,47 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void insertarSala() {
+        if (getEntidadSeleccionada().equalsIgnoreCase("SALAS")) {
+            Salas nuevaSala = new Salas();
+            nuevaSala.setNombre(txtCampo1.getText());
+            nuevaSala.setDescripcion(txtAreaDescripcion.getText());
+            nuevaSala.setTematica(cbTipoTematicaSalas.getValue());
+
+            try {
+                salasJpa.create(nuevaSala);
+                cargarDatosSalas();
+                mostrarAlerta("Sala insertada correctamente.");
+                limpiarCampos();
+            } catch (Exception e) {
+                mostrarError("Error al insertar sala: " + e.getMessage());
+            }
+        }
+    }
+
     @FXML
     private void btnGuardarOnAction(ActionEvent event) {
-        if (modoEdicion && museoSeleccionado != null) {
+        String entidad = getEntidadSeleccionada();
+
+        if (modoEdicion) {
+            switch (entidad) {
+                case "MUSEOS":
+                    guardarCambiosMuseo();
+                    break;
+                case "SALAS":
+                    guardarCambiosSala();
+                    break;
+                // Agrega más casos para otras entidades
+                default:
+                    mostrarError("Entidad no reconocida para guardar cambios.");
+            }
+        } else {
+            mostrarError("No hay ningún elemento en modo edición.");
+        }
+    }
+
+    private void guardarCambiosMuseo() {
+        if (museoSeleccionado != null) {
             museoSeleccionado.setNombre(txtCampo1.getText());
             museoSeleccionado.setTipo(txtCampo2.getText());
             museoSeleccionado.setUbicacion(txtCampo3.getText());
@@ -353,11 +480,50 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void guardarCambiosSala() {
+        Salas salaSeleccionada = tvSalas.getSelectionModel().getSelectedItem();
+        if (salaSeleccionada != null) {
+            salaSeleccionada.setNombre(txtCampo1.getText());
+            salaSeleccionada.setDescripcion(txtAreaDescripcion.getText());
+            salaSeleccionada.setTematica(cbTipoTematicaSalas.getValue());
+
+            Museos museoSeleccionado = cbElegirMuseoSalas.getSelectionModel().getSelectedItem();
+            if (museoSeleccionado != null) {
+                salaSeleccionada.setIdMuseo(museoSeleccionado);
+            } else {
+                mostrarError("Debe seleccionar un museo asociado para la sala.");
+                return;
+            }
+
+            try {
+                salasJpa.edit(salaSeleccionada);
+                cargarDatosSalas();
+                mostrarAlerta("Cambios guardados correctamente.");
+            } catch (Exception e) {
+                mostrarError("Error al guardar cambios: " + e.getMessage());
+            }
+
+            modoEdicion = false;
+            limpiarCampos();
+        } else {
+            mostrarError("Debe seleccionar una sala para guardar los cambios.");
+        }
+    }
+
     @FXML
     private void btnCancelarOnAction(ActionEvent event) {
         limpiarCampos();
-        modoEdicion = false;
-        museoSeleccionado = null;
+    }
+
+    private String obtenerEntidadSeleccionada() {
+        Tab tabActivo = tvVerElementosClases.getSelectionModel().getSelectedItem();
+        if (tabActivo == tapMuseos) {
+            return "MUSEOS";
+        } else if (tabActivo == tapSalas) {
+            return "SALAS";
+        }
+        // Agregá más tabs si querés...
+        return "";
     }
 
     public void cargarDatosMuseos() {
@@ -392,6 +558,30 @@ public class MantenimientoController implements Initializable {
         tvMuseos.setItems(FXCollections.observableArrayList(listaMuseos));
     }
 
+    public void cargarDatosSalas() {
+        // Limpiar columnas anteriores
+        tvSalas.getColumns().clear();
+
+        TableColumn<Salas, String> colNombre = new TableColumn<>("Nombre Sala");
+        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+
+        TableColumn<Salas, String> colDescripcion = new TableColumn<>("Descripción");
+        colDescripcion.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
+
+        TableColumn<Salas, String> colTematica = new TableColumn<>("Temática");
+        colTematica.setCellValueFactory(new PropertyValueFactory<>("tematica"));
+
+        TableColumn<Salas, String> colMuseo = new TableColumn<>("Museo");
+        colMuseo.setCellValueFactory(cellData -> {
+            Museos museo = cellData.getValue().getIdMuseo();
+            String nombreMuseo = (museo != null) ? museo.getNombre() : "Sin museo";
+            return new ReadOnlyStringWrapper(nombreMuseo);
+        });
+        tvSalas.getColumns().addAll(colNombre, colDescripcion, colTematica, colMuseo);
+        Collection<Salas> listaSalas = salasJpa.findSalasEntities();
+        tvSalas.setItems(FXCollections.observableArrayList(listaSalas));
+    }
+
     private void mostrarAlerta(String mensaje) {
         Alert alerta = new Alert(Alert.AlertType.INFORMATION);
         alerta.setContentText(mensaje);
@@ -412,11 +602,19 @@ public class MantenimientoController implements Initializable {
         txtCampo5.clear();
         txtCampo6.clear();
         txtCampo7.clear();
+
+        txtAreaDescripcion.clear();
+
         datePickerSelect.setValue(null);
         datePickerSelectAuxiliar.setValue(null);
-        cbTipoTarjeta.setValue(null);
-        txtAreaDescripcion.clear();
-        cbTipoMuseo.setValue(null);
+
+        cbTipoMuseo.getSelectionModel().clearSelection();
+        cbTipoTematicaSalas.getSelectionModel().clearSelection();
+        cbTipoTarjeta.getSelectionModel().clearSelection();
+
+        modoEdicion = false;
+        museoSeleccionado = null;
+        salaSeleccionada = null;
     }
 
     private void actualizarCamposPorEntidad(String entidad) {
@@ -426,34 +624,36 @@ public class MantenimientoController implements Initializable {
             case "MUSEOS":
                 mostrarCamposMuseos();
                 tvVerElementosClases.getSelectionModel().select(tapMuseos);
+                cargarDatosMuseos();
                 break;
 
-            case "Salas":
+            case "SALAS":
                 mostrarCamposSalas();
                 tvVerElementosClases.getSelectionModel().select(tapSalas);
+                cargarDatosSalas();
                 break;
 
-            case "Colecciones":
+            case "COLECCIONES":
                 mostrarCamposColecciones();
                 tvVerElementosClases.getSelectionModel().select(tapColecciones);
                 break;
 
-            case "Especies":
+            case "ESPECIES":
                 mostrarCamposEspecies();
                 tvVerElementosClases.getSelectionModel().select(tapEspecies);
                 break;
 
-            case "Temáticas":
+            case "TEMÁTICAS":
                 mostrarCamposTematicas();
                 tvVerElementosClases.getSelectionModel().select(tapTematicas);
                 break;
 
-            case "Precios":
+            case "PRECIOS":
                 mostrarCamposPrecios();
                 tvVerElementosClases.getSelectionModel().select(tapPrecios);
                 break;
 
-            case "Comisiones de tarjetas":
+            case "COMISIONES DE TARJETAS":
                 mostrarCamposComisiones();
                 tvVerElementosClases.getSelectionModel().select(tapComisionesTarjeta);
                 break;
@@ -470,9 +670,9 @@ public class MantenimientoController implements Initializable {
             case "MUSEOS":
                 filtros = Arrays.asList("Nombre", "Ubicación", "Tipo");  // Pon los campos que quieras filtrar
                 break;
-//            case "Salas":
-//                filtros = Arrays.asList("Nombre", "Capacidad");
-//                break;
+            case "SALAS":
+                filtros = Arrays.asList("Nombre", "Temática");
+                break;
 //            case "Colecciones":
 //                filtros = Arrays.asList("Nombre", "Descripción");
 //                break;
@@ -483,7 +683,7 @@ public class MantenimientoController implements Initializable {
         }
 
         cbFiltroElementos.setItems(FXCollections.observableArrayList(filtros));
-        cbFiltroElementos.getSelectionModel().selectFirst(); // Seleccionar el primero por defecto (opcional)
+        cbFiltroElementos.getSelectionModel().selectFirst();
     }
 
 // ---------- Métodos para mostrar campos específicos según entidad -----------
@@ -508,11 +708,42 @@ public class MantenimientoController implements Initializable {
 
     private void mostrarCamposSalas() {
         txtCampo1.setVisible(true); // Nombre
-        txtCampo2.setVisible(true); // Número
-        txtCampo3.setVisible(true); // Tipo
+        txtAreaDescripcion.setVisible(true); // Descripción (área de texto)
+        cbTipoTematicaSalas.setVisible(true); // Temática
+        cbElegirMuseoSalas.setVisible(true); // Museo asociado
+
         txtCampo1.setPromptText("Nombre de la sala");
-        txtCampo2.setPromptText("Número de sala");
-        txtCampo3.setPromptText("Tipo");
+        txtAreaDescripcion.setPromptText("Descripción de la sala");
+        cbTipoTematicaSalas.setPromptText("Temática");
+        cbElegirMuseoSalas.setPromptText("Seleccionar museo");
+
+        // Cargar museos desde la base de datos
+        ObservableList<Museos> listaMuseos = FXCollections.observableArrayList(museosJpa.findMuseosEntities());
+        cbElegirMuseoSalas.setItems(listaMuseos);
+
+        // Mostrar solo el nombre del museo en el ComboBox
+        cbElegirMuseoSalas.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(Museos item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNombre());
+            }
+        });
+
+        cbElegirMuseoSalas.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Museos item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNombre());
+            }
+        });
+
+        // Cargar temáticas
+        cbTipoTematicaSalas.setItems(FXCollections.observableArrayList(
+                "Antropología", "Ciencias Físicas", "Biodiversidad",
+                "Genoma", "Informática", "Invertebrados",
+                "Paleontología", "Zoología"
+        ));
     }
 
     private void mostrarCamposColecciones() {
@@ -575,7 +806,7 @@ public class MantenimientoController implements Initializable {
         txtCampo6.setVisible(false);
         txtCampo7.setVisible(false);
         cbTipoMuseo.setVisible(false);
-
+        cbTipoTematicaSalas.setVisible(false);
         // DatePickers
         datePickerSelect.setVisible(false);
         datePickerSelectAuxiliar.setVisible(false);
@@ -604,6 +835,7 @@ public class MantenimientoController implements Initializable {
         txtAreaDescripcion.setPromptText("");
         cbTipoTarjeta.setPromptText("");
         cbTipoMuseo.setPromptText("");
+        cbTipoTematicaSalas.setPromptText("");
     }
 
     @FXML

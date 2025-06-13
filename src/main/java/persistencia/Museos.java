@@ -155,7 +155,7 @@ public class Museos implements Serializable {
 
     @Override
     public String toString() {
-        return "persistencia.Museos[ idMuseo=" + idMuseo + " ]";
+        return getNombre();
     }
 
 }
