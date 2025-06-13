@@ -1,5 +1,6 @@
 package com.mycompany.bd_museomahn_proyecto2;
 
+import controladores.ColeccionesJpaController;
 import controladores.MuseosJpaController;
 import controladores.SalasJpaController;
 import java.net.URL;
@@ -126,11 +127,12 @@ public class MantenimientoController implements Initializable {
     private boolean modoEdicion = false;
     private Museos museoSeleccionado = null;
     private Salas salaSeleccionada = null;
+    private Colecciones coleccionSeleccionada = null;
 
     //INSTANCIAS GLOBALES
     private MuseosJpaController museosJpa = new MuseosJpaController();
     private SalasJpaController salasJpa = new SalasJpaController();
-
+    private ColeccionesJpaController coleccionesJpa = new ColeccionesJpaController();
     @FXML
     private ComboBox<String> cbTipoMuseo;
     @FXML
@@ -153,6 +155,8 @@ public class MantenimientoController implements Initializable {
     private ComboBox<String> cbTipoTematicaSalas;
     @FXML
     private ComboBox<Museos> cbElegirMuseoSalas;
+    @FXML
+    private ComboBox<Salas> cbElegirSalaColeccion;
 
     /**
      * Initializes the controller class.
@@ -172,8 +176,9 @@ public class MantenimientoController implements Initializable {
                 cargarDatosMuseos();
             } else if (newTab == tapSalas) {
                 cargarDatosSalas();
+            } else if (newTab == tapColecciones) {
+                cargarDatosColecciones();
             }
-            // ...otros tabs si tienes
         });
 
         // Listener para ComboBox de entidad seleccionada
@@ -192,6 +197,11 @@ public class MantenimientoController implements Initializable {
                         cargarDatosSalas();
                         tvVerElementosClases.getSelectionModel().select(tapSalas);
                         break;
+                    case "COLECCIONES":
+                        cargarDatosColecciones();
+                        tvVerElementosClases.getSelectionModel().select(tapColecciones);
+                        break;
+
                     // Otros casos según tus entidades
                 }
             }
@@ -255,6 +265,26 @@ public class MantenimientoController implements Initializable {
                 tvSalas.setItems(FXCollections.observableArrayList(listaSalasFiltrada));
                 break;
 
+            case "COLECCIONES":
+                List<Colecciones> listaColeccionesFiltrada = coleccionesJpa.findColeccionesEntities()
+                        .stream()
+                        .filter(coleccion -> {
+                            Salas sala = coleccion.getIdSala(); 
+                            String nombreSala = (sala != null) ? sala.getNombre().toLowerCase() : "sin sala";
+
+                            switch (filtroSeleccionado) {
+                                case "Nombre":
+                                    return coleccion.getNombreColeccion().toLowerCase().contains(textoFiltro);
+                                case "Sala":
+                                    return nombreSala.contains(textoFiltro);
+                                default:
+                                    return true;
+                            }
+                        })
+                        .collect(Collectors.toList());
+                tvColecciones.setItems(FXCollections.observableArrayList(listaColeccionesFiltrada));
+                break;
+
             default:
                 mostrarError("No hay entidad seleccionada para filtrar.");
                 break;
@@ -271,6 +301,9 @@ public class MantenimientoController implements Initializable {
                 break;
             case "SALAS":
                 editarSala();
+                break;
+            case "COLECCIONES":
+                editarColeccion();
                 break;
             // agrega los demás casos para otras entidades
             default:
@@ -317,6 +350,30 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void editarColeccion() {
+        Colecciones coleccionSeleccionada = tvColecciones.getSelectionModel().getSelectedItem();
+        if (coleccionSeleccionada != null) {
+            txtCampo1.setText(coleccionSeleccionada.getNombreColeccion());
+            txtAreaDescripcion.setText(coleccionSeleccionada.getDescripcion());
+
+            LocalDate localDate = null;
+            if (coleccionSeleccionada.getSiglo() != null && !coleccionSeleccionada.getSiglo().isEmpty()) {
+                try {
+                    localDate = LocalDate.of(Integer.parseInt(coleccionSeleccionada.getSiglo()), 1, 1);
+                } catch (NumberFormatException e) {
+                    localDate = null;
+                }
+            }
+            datePickerSelectAuxiliar.setValue(localDate);
+
+            cbElegirSalaColeccion.setValue(coleccionSeleccionada.getIdSala());
+
+            modoEdicion = true;
+        } else {
+            mostrarError("Debe seleccionar una colección para editar.");
+        }
+    }
+
     @FXML
     private void btnEliminarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
@@ -354,6 +411,22 @@ public class MantenimientoController implements Initializable {
                 }
                 break;
 
+            case "COLECCIONES":
+                Colecciones coleccion = tvColecciones.getSelectionModel().getSelectedItem();
+                if (coleccion != null) {
+                    try {
+                        coleccionesJpa.delete(coleccion);
+                        cargarDatosColecciones();
+                        mostrarAlerta("Colección eliminada.");
+                        limpiarCampos();
+                    } catch (Exception e) {
+                        mostrarError("Error al eliminar colección: " + e.getMessage());
+                    }
+                } else {
+                    mostrarError("Seleccione una colección para eliminar.");
+                }
+                break;
+
             // Aquí irán más entidades como Colecciones, Temáticas, etc.
             default:
                 mostrarError("Entidad no válida para eliminar.");
@@ -372,8 +445,8 @@ public class MantenimientoController implements Initializable {
             case "SALAS":
                 insertarSala();
                 break;
-            case "Colecciones":
-                // insertarColeccion();
+            case "COLECCIONES":
+                insertarColeccion();
                 break;
             // ...
             default:
@@ -428,6 +501,38 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void insertarColeccion() {
+        if (getEntidadSeleccionada().equals("COLECCIONES")) {
+            Colecciones nueva = new Colecciones();
+            nueva.setNombreColeccion(txtCampo1.getText());
+            nueva.setDescripcion(txtAreaDescripcion.getText());
+
+            LocalDate localDate = datePickerSelectAuxiliar.getValue();
+            if (localDate != null) {
+                nueva.setSiglo(String.valueOf(localDate.getYear()));
+            } else {
+                nueva.setSiglo(null);
+            }
+
+            Salas salaSeleccionada = cbElegirSalaColeccion.getSelectionModel().getSelectedItem();
+            if (salaSeleccionada != null) {
+                nueva.setIdSala(salaSeleccionada);
+            } else {
+                mostrarError("Debe seleccionar una sala para la colección.");
+                return;
+            }
+
+            try {
+                coleccionesJpa.create(nueva);
+                cargarDatosColecciones();
+                mostrarAlerta("Colección insertada correctamente.");
+                limpiarCampos();
+            } catch (Exception e) {
+                mostrarError("Error al insertar colección: " + e.getMessage());
+            }
+        }
+    }
+
     @FXML
     private void btnGuardarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
@@ -440,6 +545,10 @@ public class MantenimientoController implements Initializable {
                 case "SALAS":
                     guardarCambiosSala();
                     break;
+                case "COLECCIONES":
+                    guardarCambiosColeccion();
+                    break;
+
                 // Agrega más casos para otras entidades
                 default:
                     mostrarError("Entidad no reconocida para guardar cambios.");
@@ -510,6 +619,42 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void guardarCambiosColeccion() {
+        Colecciones coleccionSeleccionada = tvColecciones.getSelectionModel().getSelectedItem();
+        if (coleccionSeleccionada != null) {
+            coleccionSeleccionada.setNombreColeccion(txtCampo1.getText());
+            coleccionSeleccionada.setDescripcion(txtAreaDescripcion.getText());
+
+            LocalDate localDate = datePickerSelectAuxiliar.getValue();
+            if (localDate != null) {
+                coleccionSeleccionada.setSiglo(String.valueOf(localDate.getYear())); // Guardamos el año como siglo
+            } else {
+                coleccionSeleccionada.setSiglo(null);
+            }
+
+            Salas salaSeleccionada = cbElegirSalaColeccion.getSelectionModel().getSelectedItem();
+            if (salaSeleccionada != null) {
+                coleccionSeleccionada.setIdSala(salaSeleccionada);
+            } else {
+                mostrarError("Debe seleccionar una sala para la colección.");
+                return;
+            }
+
+            try {
+                coleccionesJpa.edit(coleccionSeleccionada);
+                cargarDatosColecciones();
+                mostrarAlerta("Cambios guardados correctamente.");
+            } catch (Exception e) {
+                mostrarError("Error al guardar cambios: " + e.getMessage());
+            }
+
+            modoEdicion = false;
+            limpiarCampos();
+        } else {
+            mostrarError("Debe seleccionar una colección para guardar los cambios.");
+        }
+    }
+
     @FXML
     private void btnCancelarOnAction(ActionEvent event) {
         limpiarCampos();
@@ -521,8 +666,9 @@ public class MantenimientoController implements Initializable {
             return "MUSEOS";
         } else if (tabActivo == tapSalas) {
             return "SALAS";
+        } else if (tabActivo == tapColecciones) {
+            return "COLECCIONES";
         }
-        // Agregá más tabs si querés...
         return "";
     }
 
@@ -582,6 +728,29 @@ public class MantenimientoController implements Initializable {
         tvSalas.setItems(FXCollections.observableArrayList(listaSalas));
     }
 
+    public void cargarDatosColecciones() {
+        tvColecciones.getColumns().clear();
+
+        TableColumn<Colecciones, String> colNombre = new TableColumn<>("Nombre Colección");
+        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombreColeccion"));
+
+        TableColumn<Colecciones, String> colSiglo = new TableColumn<>("Siglo");
+        colSiglo.setCellValueFactory(new PropertyValueFactory<>("siglo"));
+
+        TableColumn<Colecciones, String> colDescripcion = new TableColumn<>("Descripción");
+        colDescripcion.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
+
+        TableColumn<Colecciones, String> colSala = new TableColumn<>("Sala");
+        colSala.setCellValueFactory(cellData -> {
+            Salas sala = cellData.getValue().getIdSala();
+            String nombreSala = (sala != null) ? sala.getNombre() : "Sin sala";
+            return new ReadOnlyStringWrapper(nombreSala);
+        });
+        tvColecciones.getColumns().addAll(colNombre, colSiglo, colDescripcion, colSala);
+        Collection<Colecciones> listaColecciones = coleccionesJpa.findColeccionesEntities();
+        tvColecciones.setItems(FXCollections.observableArrayList(listaColecciones));
+    }
+
     private void mostrarAlerta(String mensaje) {
         Alert alerta = new Alert(Alert.AlertType.INFORMATION);
         alerta.setContentText(mensaje);
@@ -611,10 +780,12 @@ public class MantenimientoController implements Initializable {
         cbTipoMuseo.getSelectionModel().clearSelection();
         cbTipoTematicaSalas.getSelectionModel().clearSelection();
         cbTipoTarjeta.getSelectionModel().clearSelection();
+        cbElegirSalaColeccion.getSelectionModel().clearSelection();
 
         modoEdicion = false;
         museoSeleccionado = null;
         salaSeleccionada = null;
+        coleccionSeleccionada = null;
     }
 
     private void actualizarCamposPorEntidad(String entidad) {
@@ -636,6 +807,7 @@ public class MantenimientoController implements Initializable {
             case "COLECCIONES":
                 mostrarCamposColecciones();
                 tvVerElementosClases.getSelectionModel().select(tapColecciones);
+                cargarDatosColecciones();
                 break;
 
             case "ESPECIES":
@@ -668,14 +840,14 @@ public class MantenimientoController implements Initializable {
 
         switch (entidad) {
             case "MUSEOS":
-                filtros = Arrays.asList("Nombre", "Ubicación", "Tipo");  // Pon los campos que quieras filtrar
+                filtros = Arrays.asList("Nombre", "Ubicación", "Tipo");
                 break;
             case "SALAS":
                 filtros = Arrays.asList("Nombre", "Temática");
                 break;
-//            case "Colecciones":
-//                filtros = Arrays.asList("Nombre", "Descripción");
-//                break;
+            case "COLECCIONES":
+                filtros = Arrays.asList("Nombre", "Sala");
+                break;
             // Agrega los demás casos para las otras entidades...
             default:
                 filtros = Collections.emptyList();
@@ -748,13 +920,32 @@ public class MantenimientoController implements Initializable {
 
     private void mostrarCamposColecciones() {
         txtCampo1.setVisible(true); // Nombre
-        txtCampo2.setVisible(true); // Responsable
-        txtCampo3.setVisible(true); // Departamento
         txtAreaDescripcion.setVisible(true);
+        datePickerSelectAuxiliar.setVisible(true);
+        cbElegirSalaColeccion.setVisible(true);
         txtCampo1.setPromptText("Nombre de la colección");
-        txtCampo2.setPromptText("Responsable");
-        txtCampo3.setPromptText("Departamento");
         txtAreaDescripcion.setPromptText("Descripción");
+        datePickerSelectAuxiliar.setPromptText("Siglo");
+        cbElegirSalaColeccion.setPromptText("Seleccionar Sala");
+
+        ObservableList<Salas> listaSalas = FXCollections.observableArrayList(salasJpa.findSalasEntities());
+        cbElegirSalaColeccion.setItems(listaSalas);
+
+        cbElegirSalaColeccion.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(Salas item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNombre());
+            }
+        });
+
+        cbElegirSalaColeccion.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Salas item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNombre());
+            }
+        });
     }
 
     private void mostrarCamposEspecies() {
@@ -807,6 +998,7 @@ public class MantenimientoController implements Initializable {
         txtCampo7.setVisible(false);
         cbTipoMuseo.setVisible(false);
         cbTipoTematicaSalas.setVisible(false);
+        cbElegirSalaColeccion.setVisible(false);
         // DatePickers
         datePickerSelect.setVisible(false);
         datePickerSelectAuxiliar.setVisible(false);
@@ -836,6 +1028,7 @@ public class MantenimientoController implements Initializable {
         cbTipoTarjeta.setPromptText("");
         cbTipoMuseo.setPromptText("");
         cbTipoTematicaSalas.setPromptText("");
+        cbElegirSalaColeccion.setPromptText("");
     }
 
     @FXML

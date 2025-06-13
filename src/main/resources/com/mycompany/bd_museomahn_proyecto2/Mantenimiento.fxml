@@ -50,7 +50,7 @@
             <TextField fx:id="txtCampo1" layoutX="99.0" layoutY="454.0" prefHeight="36.0" prefWidth="204.0" />
             <TextField fx:id="txtCampo6" layoutX="99.0" layoutY="612.0" prefHeight="36.0" prefWidth="204.0" />
             <TextField fx:id="txtCampo7" layoutX="327.0" layoutY="612.0" prefHeight="36.0" prefWidth="175.0" />
-            <DatePicker fx:id="datePickerSelectAuxiliar" layoutX="518.0" layoutY="562.0" prefHeight="36.0" prefWidth="184.0" />
+            <DatePicker fx:id="datePickerSelectAuxiliar" layoutX="100.0" layoutY="612.0" prefHeight="36.0" prefWidth="184.0" />
             <ComboBox fx:id="cbTipoTarjeta" layoutX="340.0" layoutY="457.0" prefWidth="150.0" />
             <TextArea fx:id="txtAreaDescripcion" layoutX="99.0" layoutY="527.0" prefHeight="71.0" prefWidth="403.0" />
             <TabPane fx:id="tvVerElementosClases" layoutX="99.0" layoutY="155.0" prefHeight="258.0" prefWidth="937.0" tabClosingPolicy="UNAVAILABLE">
@@ -96,6 +96,7 @@
             <Button fx:id="btnSalir" layoutX="729.0" layoutY="562.0" mnemonicParsing="false" onAction="#btnSalirOnAction" prefHeight="36.0" prefWidth="82.0" text="SALIR" />
             <ComboBox fx:id="cbTipoTematicaSalas" layoutX="126.0" layoutY="494.0" prefWidth="150.0" />
             <ComboBox fx:id="cbElegirMuseoSalas" layoutX="340.0" layoutY="460.0" prefWidth="150.0" />
+            <ComboBox fx:id="cbElegirSalaColeccion" layoutX="340.0" layoutY="460.0" prefWidth="150.0" />
          </children>
       </Pane>
       <Pane layoutX="45.0" layoutY="76.0" prefHeight="741.0" prefWidth="343.0" style="-fx-background-color: cyan sky;">
