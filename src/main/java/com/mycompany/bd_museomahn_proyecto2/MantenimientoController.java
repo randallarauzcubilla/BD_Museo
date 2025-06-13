@@ -6,9 +6,14 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -150,16 +155,17 @@ public class MantenimientoController implements Initializable {
                 "MUSEOS", "Salas", "Colecciones", "Especies", "Temáticas", "Precios", "Comisiones de tarjetas"
         ));
 
-        cbEntidadesMantenimiento.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                actualizarCamposPorEntidad(newVal);
-                limpiarCampos();
+        tvVerElementosClases.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            if (newTab == tapMuseos) {
+                cargarDatosMuseos();
             }
         });
 
-        tvVerElementosClases.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
-            if (newTab == tapMuseos) { // asegurarse de que se use el fx:id real del Tab
-                cargarDatosMuseos();
+        cbEntidadesMantenimiento.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                actualizarCamposPorEntidad(newVal);
+                cargarFiltrosPorEntidad(newVal);
+                limpiarCampos();
             }
         });
 
@@ -177,6 +183,46 @@ public class MantenimientoController implements Initializable {
 
     @FXML
     private void btnFiltrarOnAction(ActionEvent event) {
+        String entidadSeleccionada = cbEntidadesMantenimiento.getSelectionModel().getSelectedItem();
+        String filtroSeleccionado = cbFiltroElementos.getSelectionModel().getSelectedItem();
+        String textoBusqueda = txtFiltroBusqueda.getText().toLowerCase();
+
+        if (entidadSeleccionada == null || filtroSeleccionado == null) {
+            System.out.println("No hay un filtro.");
+            return;
+        }
+
+        switch (entidadSeleccionada) {
+            case "MUSEOS":
+                Collection<Museos> lista = museosJpa.findMuseosEntities();
+                List<Museos> filtrados = lista.stream()
+                        .filter(m -> {
+                            switch (filtroSeleccionado) {
+                                case "Nombre":
+                                    return m.getNombre().toLowerCase().contains(textoBusqueda);
+                                case "Ubicación":
+                                    return m.getUbicacion().toLowerCase().contains(textoBusqueda);
+                                case "Tipo":
+                                    return m.getTipo().toLowerCase().contains(textoBusqueda);
+                                default:
+                                    return true;
+                            }
+                        })
+                        .collect(Collectors.toList());
+
+                tvMuseos.setItems(FXCollections.observableArrayList(filtrados));
+
+                if (filtrados.isEmpty()) {
+                    Alert alerta = new Alert(Alert.AlertType.INFORMATION);
+                    alerta.setTitle("Sin resultados");
+                    alerta.setHeaderText(null);
+                    alerta.setContentText("No se encontraron datos que coincidan con la búsqueda.");
+                    alerta.showAndWait();
+                }
+                break;
+
+            // Agregar casos para otras entidades si es necesario...
+        }
     }
 
     @FXML
@@ -415,6 +461,29 @@ public class MantenimientoController implements Initializable {
                 // Si es una entidad no conocida, deja todo oculto.
                 break;
         }
+    }
+
+    private void cargarFiltrosPorEntidad(String entidad) {
+        List<String> filtros = new ArrayList<>();
+
+        switch (entidad) {
+            case "MUSEOS":
+                filtros = Arrays.asList("Nombre", "Ubicación", "Tipo");  // Pon los campos que quieras filtrar
+                break;
+//            case "Salas":
+//                filtros = Arrays.asList("Nombre", "Capacidad");
+//                break;
+//            case "Colecciones":
+//                filtros = Arrays.asList("Nombre", "Descripción");
+//                break;
+            // Agrega los demás casos para las otras entidades...
+            default:
+                filtros = Collections.emptyList();
+                break;
+        }
+
+        cbFiltroElementos.setItems(FXCollections.observableArrayList(filtros));
+        cbFiltroElementos.getSelectionModel().selectFirst(); // Seleccionar el primero por defecto (opcional)
     }
 
 // ---------- Métodos para mostrar campos específicos según entidad -----------
