@@ -42,22 +42,22 @@
             <Button fx:id="btnInsertar" layoutX="536.0" layoutY="448.0" mnemonicParsing="false" onAction="#btnInsertarOnAction" prefHeight="42.0" prefWidth="149.0" text="NUEVO" />
             <Button fx:id="btnGuardar" layoutX="865.0" layoutY="448.0" mnemonicParsing="false" onAction="#btnGuardarOnAction" prefHeight="42.0" prefWidth="149.0" text="GUARDAR" />
             <Button fx:id="btnCancelar" layoutX="782.0" layoutY="504.0" mnemonicParsing="false" onAction="#btnCancelarOnAction" prefHeight="46.0" prefWidth="142.0" text="CANCELAR" />
-            <DatePicker fx:id="datePickerSelect" layoutX="326.0" layoutY="562.0" prefHeight="36.0" prefWidth="175.0" />
+            <DatePicker fx:id="datePickerSelect" layoutX="326.0" layoutY="560.0" prefHeight="36.0" prefWidth="175.0" />
             <TextField fx:id="txtCampo3" layoutX="99.0" layoutY="506.0" prefHeight="36.0" prefWidth="204.0" />
-            <TextField fx:id="txtCampo5" layoutX="99.0" layoutY="560.0" prefHeight="36.0" prefWidth="204.0" />
+            <TextField fx:id="txtCampo5" layoutX="93.0" layoutY="560.0" prefHeight="36.0" prefWidth="224.0" />
             <TextField fx:id="txtCampo4" layoutX="326.0" layoutY="506.0" prefHeight="36.0" prefWidth="175.0" />
-            <TextField fx:id="txtCampo2" layoutX="326.0" layoutY="451.0" prefHeight="36.0" prefWidth="175.0" />
+            <TextField fx:id="txtCampo2" layoutX="326.0" layoutY="455.0" prefHeight="36.0" prefWidth="175.0" />
             <TextField fx:id="txtCampo1" layoutX="99.0" layoutY="454.0" prefHeight="36.0" prefWidth="204.0" />
             <TextField fx:id="txtCampo6" layoutX="99.0" layoutY="612.0" prefHeight="36.0" prefWidth="204.0" />
-            <TextField fx:id="txtCampo7" layoutX="327.0" layoutY="612.0" prefHeight="36.0" prefWidth="175.0" />
-            <DatePicker fx:id="datePickerSelectAuxiliar" layoutX="100.0" layoutY="612.0" prefHeight="36.0" prefWidth="184.0" />
+            <TextField fx:id="txtCampo7" layoutX="317.0" layoutY="612.0" prefHeight="36.0" prefWidth="195.0" />
+            <DatePicker fx:id="datePickerSelectAuxiliar" layoutX="109.0" layoutY="562.0" prefHeight="36.0" prefWidth="184.0" />
             <ComboBox fx:id="cbTipoTarjeta" layoutX="340.0" layoutY="457.0" prefWidth="150.0" />
-            <TextArea fx:id="txtAreaDescripcion" layoutX="99.0" layoutY="527.0" prefHeight="71.0" prefWidth="403.0" />
-            <TabPane fx:id="tvVerElementosClases" layoutX="99.0" layoutY="155.0" prefHeight="258.0" prefWidth="937.0" tabClosingPolicy="UNAVAILABLE">
+            <TextArea fx:id="txtAreaDescripcion" layoutX="99.0" layoutY="620.0" prefHeight="71.0" prefWidth="408.0" />
+            <TabPane fx:id="tvVerElementosClases" layoutX="77.0" layoutY="155.0" prefHeight="258.0" prefWidth="959.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
                 <Tab fx:id="tapMuseos" text="MUSEOS">
                      <content>
-                        <TableView fx:id="tvMuseos" prefHeight="174.0" prefWidth="413.0" />
+                        <TableView fx:id="tvMuseos" prefHeight="230.0" prefWidth="946.0" />
                      </content>
                 </Tab>
                 <Tab fx:id="tapSalas" text="SALAS">
@@ -94,9 +94,10 @@
             </TabPane>
             <ComboBox fx:id="cbTipoMuseo" layoutX="339.0" layoutY="460.0" prefWidth="150.0" />
             <Button fx:id="btnSalir" layoutX="729.0" layoutY="562.0" mnemonicParsing="false" onAction="#btnSalirOnAction" prefHeight="36.0" prefWidth="82.0" text="SALIR" />
-            <ComboBox fx:id="cbTipoTematicaSalas" layoutX="126.0" layoutY="494.0" prefWidth="150.0" />
+            <ComboBox fx:id="cbTipoTematicaSalas" layoutX="126.0" layoutY="512.0" prefWidth="150.0" />
             <ComboBox fx:id="cbElegirMuseoSalas" layoutX="340.0" layoutY="460.0" prefWidth="150.0" />
             <ComboBox fx:id="cbElegirSalaColeccion" layoutX="340.0" layoutY="460.0" prefWidth="150.0" />
+            <ComboBox fx:id="cbElegirColeccionEspecies" layoutX="132.0" layoutY="423.0" prefHeight="25.0" prefWidth="343.0" />
          </children>
       </Pane>
       <Pane layoutX="45.0" layoutY="76.0" prefHeight="741.0" prefWidth="343.0" style="-fx-background-color: cyan sky;">

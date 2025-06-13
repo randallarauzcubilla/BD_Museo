@@ -1,8 +1,10 @@
 package com.mycompany.bd_museomahn_proyecto2;
 
 import controladores.ColeccionesJpaController;
+import controladores.EspeciesJpaController;
 import controladores.MuseosJpaController;
 import controladores.SalasJpaController;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -126,13 +128,12 @@ public class MantenimientoController implements Initializable {
     private TableView<Comisionestarjetas> tvComisionesTarjeta;
     private boolean modoEdicion = false;
     private Museos museoSeleccionado = null;
-    private Salas salaSeleccionada = null;
-    private Colecciones coleccionSeleccionada = null;
 
     //INSTANCIAS GLOBALES
     private MuseosJpaController museosJpa = new MuseosJpaController();
     private SalasJpaController salasJpa = new SalasJpaController();
     private ColeccionesJpaController coleccionesJpa = new ColeccionesJpaController();
+    private EspeciesJpaController especiesJpa = new EspeciesJpaController();
     @FXML
     private ComboBox<String> cbTipoMuseo;
     @FXML
@@ -157,6 +158,8 @@ public class MantenimientoController implements Initializable {
     private ComboBox<Museos> cbElegirMuseoSalas;
     @FXML
     private ComboBox<Salas> cbElegirSalaColeccion;
+    @FXML
+    private ComboBox<Colecciones> cbElegirColeccionEspecies;
 
     /**
      * Initializes the controller class.
@@ -178,6 +181,8 @@ public class MantenimientoController implements Initializable {
                 cargarDatosSalas();
             } else if (newTab == tapColecciones) {
                 cargarDatosColecciones();
+            } else if (newTab == tapEspecies) {
+                cargarDatosEspecies();
             }
         });
 
@@ -201,7 +206,10 @@ public class MantenimientoController implements Initializable {
                         cargarDatosColecciones();
                         tvVerElementosClases.getSelectionModel().select(tapColecciones);
                         break;
-
+                    case "ESPECIES":
+                        cargarDatosEspecies();
+                        tvVerElementosClases.getSelectionModel().select(tapEspecies);
+                        break;
                     // Otros casos según tus entidades
                 }
             }
@@ -269,7 +277,7 @@ public class MantenimientoController implements Initializable {
                 List<Colecciones> listaColeccionesFiltrada = coleccionesJpa.findColeccionesEntities()
                         .stream()
                         .filter(coleccion -> {
-                            Salas sala = coleccion.getIdSala(); 
+                            Salas sala = coleccion.getIdSala();
                             String nombreSala = (sala != null) ? sala.getNombre().toLowerCase() : "sin sala";
 
                             switch (filtroSeleccionado) {
@@ -283,6 +291,29 @@ public class MantenimientoController implements Initializable {
                         })
                         .collect(Collectors.toList());
                 tvColecciones.setItems(FXCollections.observableArrayList(listaColeccionesFiltrada));
+                break;
+
+            case "ESPECIES":
+                List<Especies> listaEspeciesFiltrada = especiesJpa.findEspeciesEntities()
+                        .stream()
+                        .filter(especie -> {
+                            Colecciones coleccion = especie.getIdColeccion();
+                            String nombreColeccion = (coleccion != null) ? coleccion.getNombreColeccion().toLowerCase() : "sin colección";
+
+                            switch (filtroSeleccionado) {
+                                case "Nombre Cientifico":
+                                    return especie.getNombreCientificoDeEspecie().toLowerCase().contains(textoFiltro);
+                                case "Nombre Común":
+                                    return especie.getNombreComunDeEspecie().toLowerCase().contains(textoFiltro);
+                                case "Tipo de Colección":
+                                    return nombreColeccion.contains(textoFiltro);
+                                default:
+                                    return true;
+                            }
+                        })
+                        .collect(Collectors.toList());
+
+                tvEspecies.setItems(FXCollections.observableArrayList(listaEspeciesFiltrada));
                 break;
 
             default:
@@ -305,6 +336,10 @@ public class MantenimientoController implements Initializable {
             case "COLECCIONES":
                 editarColeccion();
                 break;
+            case "ESPECIES":
+                editarEspecie();
+                break;
+
             // agrega los demás casos para otras entidades
             default:
                 mostrarError("Entidad no reconocida para edición");
@@ -374,6 +409,33 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void editarEspecie() {
+        Especies especieSeleccionada = tvEspecies.getSelectionModel().getSelectedItem();
+        if (especieSeleccionada != null) {
+            txtCampo1.setText(especieSeleccionada.getNombreCientificoDeEspecie());
+            txtCampo2.setText(especieSeleccionada.getNombreComunDeEspecie());
+            txtCampo3.setText(especieSeleccionada.getPeso().toPlainString());
+            txtCampo4.setText(especieSeleccionada.getTamanio().toPlainString());
+            txtAreaDescripcion.setText(especieSeleccionada.getCaracteristicas());
+
+            // Convertir la fecha de extinción a LocalDate
+            Date fechaExtincion = especieSeleccionada.getFechaExtincion();
+            if (fechaExtincion != null) {
+                Instant instant = fechaExtincion.toInstant();
+                LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+                datePickerSelect.setValue(localDate);
+            } else {
+                datePickerSelect.setValue(null);
+            }
+            txtCampo5.setText(especieSeleccionada.getEpoca());
+            cbElegirColeccionEspecies.setValue(especieSeleccionada.getIdColeccion());
+
+            modoEdicion = true;
+        } else {
+            mostrarError("Debe seleccionar una especie para editar.");
+        }
+    }
+
     @FXML
     private void btnEliminarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
@@ -427,6 +489,22 @@ public class MantenimientoController implements Initializable {
                 }
                 break;
 
+            case "ESPECIES":
+                Especies especie = tvEspecies.getSelectionModel().getSelectedItem();
+                if (especie != null) {
+                    try {
+                        especiesJpa.delete(especie);
+                        cargarDatosEspecies();
+                        mostrarAlerta("Especie eliminada.");
+                        limpiarCampos();
+                    } catch (Exception e) {
+                        mostrarError("Error al eliminar especie: " + e.getMessage());
+                    }
+                } else {
+                    mostrarError("Seleccione una especie para eliminar.");
+                }
+                break;
+
             // Aquí irán más entidades como Colecciones, Temáticas, etc.
             default:
                 mostrarError("Entidad no válida para eliminar.");
@@ -447,6 +525,9 @@ public class MantenimientoController implements Initializable {
                 break;
             case "COLECCIONES":
                 insertarColeccion();
+                break;
+            case "ESPECIES":
+                insertarEspecie();
                 break;
             // ...
             default:
@@ -533,6 +614,59 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private boolean validarNumero(String texto) {
+        if (texto == null || texto.isEmpty()) {
+            return false;
+        }
+        try {
+            BigDecimal bigDecimal = new BigDecimal(texto);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private void insertarEspecie() {
+        if (getEntidadSeleccionada().equals("ESPECIES")) {
+            // Validar que Peso y Tamaño sean números
+            if (!validarNumero(txtCampo3.getText()) || !validarNumero(txtCampo4.getText())) {
+                mostrarError("Peso y Tamaño deben ser valores numéricos!");
+                return;
+            }
+
+            Especies nuevaEspecie = new Especies();
+            nuevaEspecie.setNombreCientificoDeEspecie(txtCampo1.getText());
+            nuevaEspecie.setNombreComunDeEspecie(txtCampo2.getText());
+            nuevaEspecie.setPeso(new BigDecimal(txtCampo3.getText()));
+            nuevaEspecie.setTamanio(new BigDecimal(txtCampo4.getText()));
+            nuevaEspecie.setCaracteristicas(txtAreaDescripcion.getText());
+
+            // Convertir fecha de extinción
+            LocalDate fechaExtincion = datePickerSelect.getValue();
+            nuevaEspecie.setFechaExtincion(fechaExtincion != null ? Date.from(fechaExtincion.atStartOfDay(ZoneId.systemDefault()).toInstant()) : null);
+            nuevaEspecie.setEpoca(txtCampo5.getText().trim());
+
+            // Asignar colección
+            Colecciones coleccionSeleccionada = cbElegirColeccionEspecies.getSelectionModel().getSelectedItem();
+            if (coleccionSeleccionada != null) {
+                nuevaEspecie.setIdColeccion(coleccionSeleccionada);
+            } else {
+                mostrarError("Debe seleccionar una colección para la especie!");
+                return;
+            }
+
+            // Guardar en BD
+            try {
+                especiesJpa.create(nuevaEspecie);
+                cargarDatosEspecies();
+                mostrarAlerta("Especie insertada correctamente!");
+                limpiarCampos();
+            } catch (Exception e) {
+                mostrarError("Error al insertar especie: " + e.getMessage());
+            }
+        }
+    }
+
     @FXML
     private void btnGuardarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
@@ -548,7 +682,9 @@ public class MantenimientoController implements Initializable {
                 case "COLECCIONES":
                     guardarCambiosColeccion();
                     break;
-
+                case "ESPECIES":
+                    guardarCambiosEspecie();
+                    break;
                 // Agrega más casos para otras entidades
                 default:
                     mostrarError("Entidad no reconocida para guardar cambios.");
@@ -655,6 +791,52 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void guardarCambiosEspecie() {
+        Especies especieSeleccionada = tvEspecies.getSelectionModel().getSelectedItem();
+
+        if (especieSeleccionada != null) {
+            // Validar que Peso y Tamaño sean numéricos
+            if (!validarNumero(txtCampo3.getText()) || !validarNumero(txtCampo4.getText())) {
+                mostrarError("Peso y Tamaño deben ser valores numéricos!");
+                return;
+            }
+
+            // Actualizar datos
+            especieSeleccionada.setNombreCientificoDeEspecie(txtCampo1.getText());
+            especieSeleccionada.setNombreComunDeEspecie(txtCampo2.getText());
+            especieSeleccionada.setPeso(new BigDecimal(txtCampo3.getText()));
+            especieSeleccionada.setTamanio(new BigDecimal(txtCampo4.getText()));
+            especieSeleccionada.setCaracteristicas(txtAreaDescripcion.getText());
+
+            // Convertir fecha de extinción
+            LocalDate fechaExtincion = datePickerSelect.getValue();
+            especieSeleccionada.setFechaExtincion(fechaExtincion != null ? Date.from(fechaExtincion.atStartOfDay(ZoneId.systemDefault()).toInstant()) : null);
+            especieSeleccionada.setEpoca(txtCampo5.getText().trim());
+
+            // Asignar colección
+            Colecciones coleccionSeleccionada = cbElegirColeccionEspecies.getSelectionModel().getSelectedItem();
+            if (coleccionSeleccionada != null) {
+                especieSeleccionada.setIdColeccion(coleccionSeleccionada);
+            } else {
+                mostrarError("Debe seleccionar una colección para la especie!");
+                return;
+            }
+
+            // Guardar cambios en BD
+            try {
+                especiesJpa.edit(especieSeleccionada);
+                cargarDatosEspecies();
+                mostrarAlerta("Cambios guardados correctamente!");
+                limpiarCampos();
+                modoEdicion = false;
+            } catch (Exception e) {
+                mostrarError("Error al guardar cambios: " + e.getMessage());
+            }
+        } else {
+            mostrarError("Debe seleccionar una especie para guardar los cambios.");
+        }
+    }
+
     @FXML
     private void btnCancelarOnAction(ActionEvent event) {
         limpiarCampos();
@@ -662,13 +844,17 @@ public class MantenimientoController implements Initializable {
 
     private String obtenerEntidadSeleccionada() {
         Tab tabActivo = tvVerElementosClases.getSelectionModel().getSelectedItem();
+
         if (tabActivo == tapMuseos) {
             return "MUSEOS";
         } else if (tabActivo == tapSalas) {
             return "SALAS";
         } else if (tabActivo == tapColecciones) {
             return "COLECCIONES";
+        } else if (tabActivo == tapEspecies) {
+            return "ESPECIES";
         }
+
         return "";
     }
 
@@ -751,6 +937,43 @@ public class MantenimientoController implements Initializable {
         tvColecciones.setItems(FXCollections.observableArrayList(listaColecciones));
     }
 
+    public void cargarDatosEspecies() {
+        tvEspecies.getColumns().clear();
+
+        TableColumn<Especies, String> colNombreCientifico = new TableColumn<>("Nombre Científico");
+        colNombreCientifico.setCellValueFactory(new PropertyValueFactory<>("nombreCientificoDeEspecie"));
+
+        TableColumn<Especies, String> colNombreComun = new TableColumn<>("Nombre Común");
+        colNombreComun.setCellValueFactory(new PropertyValueFactory<>("nombreComunDeEspecie"));
+
+        TableColumn<Especies, BigDecimal> colPeso = new TableColumn<>("Peso(kg)");
+        colPeso.setCellValueFactory(new PropertyValueFactory<>("peso"));
+
+        TableColumn<Especies, BigDecimal> colTamanio = new TableColumn<>("Tamaño(m)");
+        colTamanio.setCellValueFactory(new PropertyValueFactory<>("tamanio"));
+
+        TableColumn<Especies, String> colEpoca = new TableColumn<>("Época");
+        colEpoca.setCellValueFactory(new PropertyValueFactory<>("epoca"));
+
+        TableColumn<Especies, String> colFechaExtincion = new TableColumn<>("Fecha Extinción");
+        colFechaExtincion.setCellValueFactory(cellData -> {
+            Date fecha = cellData.getValue().getFechaExtincion();
+            String fechaFormateada = (fecha != null) ? new SimpleDateFormat("yyyy").format(fecha) : "No registrada";
+            return new ReadOnlyStringWrapper(fechaFormateada);
+        });
+        TableColumn<Especies, String> colColeccion = new TableColumn<>("Tipo Colección");
+        colColeccion.setCellValueFactory(cellData -> {
+            Colecciones coleccion = cellData.getValue().getIdColeccion();
+            String nombreColeccion = (coleccion != null) ? coleccion.getNombreColeccion() : "Sin colección";
+            return new ReadOnlyStringWrapper(nombreColeccion);
+        });
+        TableColumn<Especies, String> colDescripcion = new TableColumn<>("Descripción");
+        colDescripcion.setCellValueFactory(new PropertyValueFactory<>("caracteristicas"));
+       tvEspecies.getColumns().addAll(colNombreCientifico, colNombreComun, colPeso, colTamanio, colEpoca, colFechaExtincion, colColeccion, colDescripcion);
+        Collection<Especies> listaEspecies = especiesJpa.findEspeciesEntities();
+        tvEspecies.setItems(FXCollections.observableArrayList(listaEspecies));
+    }
+
     private void mostrarAlerta(String mensaje) {
         Alert alerta = new Alert(Alert.AlertType.INFORMATION);
         alerta.setContentText(mensaje);
@@ -781,11 +1004,9 @@ public class MantenimientoController implements Initializable {
         cbTipoTematicaSalas.getSelectionModel().clearSelection();
         cbTipoTarjeta.getSelectionModel().clearSelection();
         cbElegirSalaColeccion.getSelectionModel().clearSelection();
-
+        cbElegirColeccionEspecies.getSelectionModel().clearSelection();
         modoEdicion = false;
         museoSeleccionado = null;
-        salaSeleccionada = null;
-        coleccionSeleccionada = null;
     }
 
     private void actualizarCamposPorEntidad(String entidad) {
@@ -813,6 +1034,7 @@ public class MantenimientoController implements Initializable {
             case "ESPECIES":
                 mostrarCamposEspecies();
                 tvVerElementosClases.getSelectionModel().select(tapEspecies);
+                cargarDatosEspecies();
                 break;
 
             case "TEMÁTICAS":
@@ -847,6 +1069,9 @@ public class MantenimientoController implements Initializable {
                 break;
             case "COLECCIONES":
                 filtros = Arrays.asList("Nombre", "Sala");
+                break;
+            case "ESPECIES":
+                filtros = Arrays.asList("Nombre Común", "Nombre Cientifico", "Tipo de Colección");
                 break;
             // Agrega los demás casos para las otras entidades...
             default:
@@ -951,12 +1176,42 @@ public class MantenimientoController implements Initializable {
     private void mostrarCamposEspecies() {
         txtCampo1.setVisible(true); // Nombre científico
         txtCampo2.setVisible(true); // Nombre común
-        txtCampo3.setVisible(true); // Familia
-        txtCampo4.setVisible(true); // Género
+        txtCampo3.setVisible(true); // Peso
+        txtCampo4.setVisible(true); // Tamaño
+        datePickerSelect.setVisible(true); // Fecha de Extinción
+        txtCampo5.setVisible(true); // Epoca
+        txtAreaDescripcion.setVisible(true); // Características principales
+        cbElegirColeccionEspecies.setVisible(true); // Tipo Colección
+
         txtCampo1.setPromptText("Nombre científico");
         txtCampo2.setPromptText("Nombre común");
-        txtCampo3.setPromptText("Familia");
-        txtCampo4.setPromptText("Género");
+        txtCampo3.setPromptText("Peso (kg)");
+        txtCampo4.setPromptText("Tamaño (M)");
+        datePickerSelect.setPromptText("Fecha de Extinción");
+        txtCampo5.setPromptText("Época (EJ):Pleistoceno");
+        txtAreaDescripcion.setPromptText("Características Principales");
+        cbElegirColeccionEspecies.setPromptText("Tipo de Colección");
+
+        // Cargar lista de colecciones
+        ObservableList<Colecciones> listaColecciones = FXCollections.observableArrayList(coleccionesJpa.findColeccionesEntities());
+        cbElegirColeccionEspecies.setItems(listaColecciones);
+
+        // Configurar cómo se muestra la lista en el ComboBox
+        cbElegirColeccionEspecies.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(Colecciones item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNombreColeccion());
+            }
+        });
+
+        cbElegirColeccionEspecies.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Colecciones item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNombreColeccion());
+            }
+        });
     }
 
     private void mostrarCamposTematicas() {
@@ -999,13 +1254,14 @@ public class MantenimientoController implements Initializable {
         cbTipoMuseo.setVisible(false);
         cbTipoTematicaSalas.setVisible(false);
         cbElegirSalaColeccion.setVisible(false);
+        cbElegirColeccionEspecies.setVisible(false);
         // DatePickers
         datePickerSelect.setVisible(false);
         datePickerSelectAuxiliar.setVisible(false);
 
         // ComboBox
         cbTipoTarjeta.setVisible(false);
-
+        cbElegirMuseoSalas.setVisible(false);
         // TextArea
         txtAreaDescripcion.setVisible(false);
 
@@ -1029,6 +1285,8 @@ public class MantenimientoController implements Initializable {
         cbTipoMuseo.setPromptText("");
         cbTipoTematicaSalas.setPromptText("");
         cbElegirSalaColeccion.setPromptText("");
+        cbElegirMuseoSalas.setPromptText("");
+        cbElegirColeccionEspecies.setPromptText("");
     }
 
     @FXML
