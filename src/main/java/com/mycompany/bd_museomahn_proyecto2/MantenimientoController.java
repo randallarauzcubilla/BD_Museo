@@ -4,6 +4,7 @@ import controladores.ColeccionesJpaController;
 import controladores.EspeciesJpaController;
 import controladores.MuseosJpaController;
 import controladores.SalasJpaController;
+import controladores.TematicasJpaController;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -111,7 +112,6 @@ public class MantenimientoController implements Initializable {
     private ComboBox<String> cbEntidadesMantenimiento;
     @FXML
     private TabPane tvVerElementosClases;
-    private Tab Museos;
     @FXML
     private TableView<Museos> tvMuseos;
     @FXML
@@ -130,10 +130,11 @@ public class MantenimientoController implements Initializable {
     private Museos museoSeleccionado = null;
 
     //INSTANCIAS GLOBALES
-    private MuseosJpaController museosJpa = new MuseosJpaController();
-    private SalasJpaController salasJpa = new SalasJpaController();
-    private ColeccionesJpaController coleccionesJpa = new ColeccionesJpaController();
-    private EspeciesJpaController especiesJpa = new EspeciesJpaController();
+    private final MuseosJpaController museosJpa = new MuseosJpaController();
+    private final SalasJpaController salasJpa = new SalasJpaController();
+    private final ColeccionesJpaController coleccionesJpa = new ColeccionesJpaController();
+    private final EspeciesJpaController especiesJpa = new EspeciesJpaController();
+    private final TematicasJpaController tematicasJpa = new TematicasJpaController();
     @FXML
     private ComboBox<String> cbTipoMuseo;
     @FXML
@@ -183,6 +184,8 @@ public class MantenimientoController implements Initializable {
                 cargarDatosColecciones();
             } else if (newTab == tapEspecies) {
                 cargarDatosEspecies();
+            } else if (newTab == tapTematicas) {
+                cargarDatosTematicas();
             }
         });
 
@@ -210,12 +213,12 @@ public class MantenimientoController implements Initializable {
                         cargarDatosEspecies();
                         tvVerElementosClases.getSelectionModel().select(tapEspecies);
                         break;
-                    // Otros casos según tus entidades
+                    case "TEMÁTICAS":
+                        cargarDatosTematicas();
+                        tvVerElementosClases.getSelectionModel().select(tapTematicas);
                 }
             }
         });
-
-        // Setea por defecto MUSEOS al iniciar
         cbEntidadesMantenimiento.getSelectionModel().select("MUSEOS");
         tvVerElementosClases.getSelectionModel().select(tapMuseos);
         cargarDatosMuseos();
@@ -251,10 +254,8 @@ public class MantenimientoController implements Initializable {
                             }
                         })
                         .collect(Collectors.toList());
-
                 tvMuseos.setItems(FXCollections.observableArrayList(listaMuseosFiltrada));
                 break;
-
             case "SALAS":
                 List<Salas> listaSalasFiltrada = salasJpa.findSalasEntities()
                         .stream()
@@ -269,17 +270,14 @@ public class MantenimientoController implements Initializable {
                             }
                         })
                         .collect(Collectors.toList());
-
                 tvSalas.setItems(FXCollections.observableArrayList(listaSalasFiltrada));
                 break;
-
             case "COLECCIONES":
                 List<Colecciones> listaColeccionesFiltrada = coleccionesJpa.findColeccionesEntities()
                         .stream()
                         .filter(coleccion -> {
                             Salas sala = coleccion.getIdSala();
                             String nombreSala = (sala != null) ? sala.getNombre().toLowerCase() : "sin sala";
-
                             switch (filtroSeleccionado) {
                                 case "Nombre":
                                     return coleccion.getNombreColeccion().toLowerCase().contains(textoFiltro);
@@ -292,14 +290,12 @@ public class MantenimientoController implements Initializable {
                         .collect(Collectors.toList());
                 tvColecciones.setItems(FXCollections.observableArrayList(listaColeccionesFiltrada));
                 break;
-
             case "ESPECIES":
                 List<Especies> listaEspeciesFiltrada = especiesJpa.findEspeciesEntities()
                         .stream()
                         .filter(especie -> {
                             Colecciones coleccion = especie.getIdColeccion();
                             String nombreColeccion = (coleccion != null) ? coleccion.getNombreColeccion().toLowerCase() : "sin colección";
-
                             switch (filtroSeleccionado) {
                                 case "Nombre Cientifico":
                                     return especie.getNombreCientificoDeEspecie().toLowerCase().contains(textoFiltro);
@@ -312,10 +308,27 @@ public class MantenimientoController implements Initializable {
                             }
                         })
                         .collect(Collectors.toList());
-
                 tvEspecies.setItems(FXCollections.observableArrayList(listaEspeciesFiltrada));
                 break;
 
+            case "TEMÁTICAS":
+                List<Tematicas> listaTematicasFiltrada = tematicasJpa.findTematicasEntities()
+                        .stream()
+                        .filter(tematica -> {
+                            Salas sala = tematica.getIdSala();
+                            String nombreSala = (sala != null) ? sala.getNombre().toLowerCase() : "sin sala";
+                            switch (filtroSeleccionado) {
+                                case "Nombre Temática":
+                                    return tematica.getNombreDeTematica().toLowerCase().contains(textoFiltro);
+                                case "Tipo Sala":
+                                    return nombreSala.contains(textoFiltro);
+                                default:
+                                    return true;
+                            }
+                        })
+                        .collect(Collectors.toList());
+                tvTematicas.setItems(FXCollections.observableArrayList(listaTematicasFiltrada));
+                break;
             default:
                 mostrarError("No hay entidad seleccionada para filtrar.");
                 break;
@@ -339,8 +352,9 @@ public class MantenimientoController implements Initializable {
             case "ESPECIES":
                 editarEspecie();
                 break;
-
-            // agrega los demás casos para otras entidades
+            case "TEMÁTICAS":
+                editarTemáticas();
+                break;
             default:
                 mostrarError("Entidad no reconocida para edición");
         }
@@ -436,6 +450,19 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void editarTemáticas() {
+        Tematicas tematicaSeleccionada = tvTematicas.getSelectionModel().getSelectedItem();
+        if (tematicaSeleccionada != null) {
+            txtCampo1.setText(tematicaSeleccionada.getNombreDeTematica());
+            txtCampo3.setText(tematicaSeleccionada.getEpocaDeTematica());
+            txtAreaDescripcion.setText(tematicaSeleccionada.getCaracteristicas());
+            cbElegirSalaColeccion.setValue(tematicaSeleccionada.getIdSala());
+            modoEdicion = true;
+        } else {
+            mostrarError("Debe seleccionar una temática para editar.");
+        }
+    }
+
     @FXML
     private void btnEliminarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
@@ -505,7 +532,21 @@ public class MantenimientoController implements Initializable {
                 }
                 break;
 
-            // Aquí irán más entidades como Colecciones, Temáticas, etc.
+            case "TEMÁTICAS":
+                Tematicas tematica = tvTematicas.getSelectionModel().getSelectedItem();
+                if (tematica != null) {
+                    try {
+                        tematicasJpa.delete(tematica);
+                        cargarDatosTematicas();
+                        mostrarAlerta("Temática eliminada.");
+                        limpiarCampos();
+                    } catch (Exception e) {
+                        mostrarError("Error al eliminar temática: " + e.getMessage());
+                    }
+                } else {
+                    mostrarError("Seleccione una temática para eliminar.");
+                }
+                break;
             default:
                 mostrarError("Entidad no válida para eliminar.");
                 break;
@@ -529,7 +570,9 @@ public class MantenimientoController implements Initializable {
             case "ESPECIES":
                 insertarEspecie();
                 break;
-            // ...
+            case "TEMÁTICAS":
+                insertarTemáticas();
+                break;
             default:
                 System.out.println("Entidad no reconocida: " + entidad);
         }
@@ -667,6 +710,30 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void insertarTemáticas() {
+        if (getEntidadSeleccionada().equals("TEMÁTICAS")) {
+            Tematicas nuevaTematica = new Tematicas();
+            nuevaTematica.setNombreDeTematica(txtCampo1.getText());
+            nuevaTematica.setEpocaDeTematica(txtCampo3.getText());
+            nuevaTematica.setCaracteristicas(txtAreaDescripcion.getText());
+            Salas salaSeleccionada = cbElegirSalaColeccion.getSelectionModel().getSelectedItem();
+            if (salaSeleccionada != null) {
+                nuevaTematica.setIdSala(salaSeleccionada);
+            } else {
+                mostrarError("Debe seleccionar una sala para la temática.");
+                return;
+            }
+            try {
+                tematicasJpa.create(nuevaTematica);
+                cargarDatosTematicas();
+                mostrarAlerta("Temática insertada correctamente.");
+                limpiarCampos();
+            } catch (Exception e) {
+                mostrarError("Error al insertar temática: " + e.getMessage());
+            }
+        }
+    }
+
     @FXML
     private void btnGuardarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
@@ -685,7 +752,9 @@ public class MantenimientoController implements Initializable {
                 case "ESPECIES":
                     guardarCambiosEspecie();
                     break;
-                // Agrega más casos para otras entidades
+                case "TEMÁTICAS":
+                    guardarCambiosTemáticas();
+                    break;
                 default:
                     mostrarError("Entidad no reconocida para guardar cambios.");
             }
@@ -837,6 +906,34 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void guardarCambiosTemáticas() {
+        Tematicas tematicaSeleccionada = tvTematicas.getSelectionModel().getSelectedItem();
+        if (tematicaSeleccionada != null) {
+            tematicaSeleccionada.setNombreDeTematica(txtCampo1.getText());
+            tematicaSeleccionada.setEpocaDeTematica(txtCampo3.getText());
+            tematicaSeleccionada.setCaracteristicas(txtAreaDescripcion.getText());
+
+            Salas salaSeleccionada = cbElegirSalaColeccion.getSelectionModel().getSelectedItem();
+            if (salaSeleccionada != null) {
+                tematicaSeleccionada.setIdSala(salaSeleccionada);
+            } else {
+                mostrarError("Debe seleccionar una sala para la temática.");
+                return;
+            }
+            try {
+                tematicasJpa.edit(tematicaSeleccionada);
+                cargarDatosTematicas();
+                mostrarAlerta("Cambios guardados correctamente.");
+            } catch (Exception e) {
+                mostrarError("Error al guardar cambios: " + e.getMessage());
+            }
+            modoEdicion = false;
+            limpiarCampos();
+        } else {
+            mostrarError("Debe seleccionar una temática para guardar los cambios.");
+        }
+    }
+
     @FXML
     private void btnCancelarOnAction(ActionEvent event) {
         limpiarCampos();
@@ -853,8 +950,9 @@ public class MantenimientoController implements Initializable {
             return "COLECCIONES";
         } else if (tabActivo == tapEspecies) {
             return "ESPECIES";
+        } else if (tabActivo == tapTematicas) {
+            return "TEMÁTICAS";
         }
-
         return "";
     }
 
@@ -969,9 +1067,32 @@ public class MantenimientoController implements Initializable {
         });
         TableColumn<Especies, String> colDescripcion = new TableColumn<>("Descripción");
         colDescripcion.setCellValueFactory(new PropertyValueFactory<>("caracteristicas"));
-       tvEspecies.getColumns().addAll(colNombreCientifico, colNombreComun, colPeso, colTamanio, colEpoca, colFechaExtincion, colColeccion, colDescripcion);
+        tvEspecies.getColumns().addAll(colNombreCientifico, colNombreComun, colPeso, colTamanio, colEpoca, colFechaExtincion, colColeccion, colDescripcion);
         Collection<Especies> listaEspecies = especiesJpa.findEspeciesEntities();
         tvEspecies.setItems(FXCollections.observableArrayList(listaEspecies));
+    }
+
+    public void cargarDatosTematicas() {
+        tvTematicas.getColumns().clear();
+
+        TableColumn<Tematicas, String> colNombre = new TableColumn<>("Nombre Temática");
+        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombreDeTematica"));
+
+        TableColumn<Tematicas, String> colEpoca = new TableColumn<>("Época");
+        colEpoca.setCellValueFactory(new PropertyValueFactory<>("epocaDeTematica"));
+
+        TableColumn<Tematicas, String> colDescripcion = new TableColumn<>("Descripción");
+        colDescripcion.setCellValueFactory(new PropertyValueFactory<>("caracteristicas"));
+
+        TableColumn<Tematicas, String> colSala = new TableColumn<>("Tipo de Sala");
+        colSala.setCellValueFactory(cellData -> {
+            Salas sala = cellData.getValue().getIdSala();
+            String nombreSala = (sala != null) ? sala.getNombre() : "Sin sala";
+            return new ReadOnlyStringWrapper(nombreSala);
+        });
+        tvTematicas.getColumns().addAll(colNombre, colEpoca, colDescripcion, colSala);
+        Collection<Tematicas> listaTematicas = tematicasJpa.findTematicasEntities();
+        tvTematicas.setItems(FXCollections.observableArrayList(listaTematicas));
     }
 
     private void mostrarAlerta(String mensaje) {
@@ -996,7 +1117,6 @@ public class MantenimientoController implements Initializable {
         txtCampo7.clear();
 
         txtAreaDescripcion.clear();
-
         datePickerSelect.setValue(null);
         datePickerSelectAuxiliar.setValue(null);
 
@@ -1040,6 +1160,7 @@ public class MantenimientoController implements Initializable {
             case "TEMÁTICAS":
                 mostrarCamposTematicas();
                 tvVerElementosClases.getSelectionModel().select(tapTematicas);
+                cargarDatosTematicas();
                 break;
 
             case "PRECIOS":
@@ -1053,6 +1174,7 @@ public class MantenimientoController implements Initializable {
                 break;
             default:
                 // Si es una entidad no conocida, deja todo oculto.
+                mostrarError("Entidad no reconocida para la acción.");
                 break;
         }
     }
@@ -1073,17 +1195,18 @@ public class MantenimientoController implements Initializable {
             case "ESPECIES":
                 filtros = Arrays.asList("Nombre Común", "Nombre Cientifico", "Tipo de Colección");
                 break;
-            // Agrega los demás casos para las otras entidades...
+            case "TEMÁTICAS":
+                filtros = Arrays.asList("Nombre Temática", "Tipo Sala");
+                break;
             default:
                 filtros = Collections.emptyList();
                 break;
         }
-
         cbFiltroElementos.setItems(FXCollections.observableArrayList(filtros));
         cbFiltroElementos.getSelectionModel().selectFirst();
     }
-
 // ---------- Métodos para mostrar campos específicos según entidad -----------
+
     private void mostrarCamposMuseos() {
         txtCampo1.setVisible(true); // Nombre
         cbTipoMuseo.setVisible(true); // Mostrar combo box para tipo
@@ -1216,11 +1339,33 @@ public class MantenimientoController implements Initializable {
 
     private void mostrarCamposTematicas() {
         txtCampo1.setVisible(true); // Título
-        txtCampo2.setVisible(true); // Área
+        txtCampo3.setVisible(true); // Época de temática
         txtAreaDescripcion.setVisible(true); // Descripción
-        txtCampo1.setPromptText("Título de la temática");
-        txtCampo2.setPromptText("Área");
+        cbElegirSalaColeccion.setVisible(true); // Sala asociada a la temática
+
+        txtCampo1.setPromptText("Nombre temática");
+        txtCampo3.setPromptText("Época de temática");
         txtAreaDescripcion.setPromptText("Descripción");
+        cbElegirSalaColeccion.setPromptText("Tipo de Sala");
+
+        ObservableList<Salas> listaSalas = FXCollections.observableArrayList(salasJpa.findSalasEntities());
+        cbElegirSalaColeccion.setItems(listaSalas);
+
+        cbElegirSalaColeccion.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(Salas item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNombre());
+            }
+        });
+
+        cbElegirSalaColeccion.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Salas item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNombre());
+            }
+        });
     }
 
     private void mostrarCamposPrecios() {

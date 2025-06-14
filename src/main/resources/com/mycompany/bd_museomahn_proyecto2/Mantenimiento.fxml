@@ -75,7 +75,7 @@
                         <TableView fx:id="tvEspecies" prefHeight="174.0" prefWidth="760.0" />
                      </content>
                   </Tab>
-                  <Tab fx:id="tapTematicas" text="TEMATICAS">
+                  <Tab fx:id="tapTematicas" text="TEMÁTICAS">
                      <content>
                         <TableView fx:id="tvTematicas" prefHeight="174.0" prefWidth="760.0" />
                      </content>
