@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -183,25 +184,7 @@ public class MantenimientoController implements Initializable {
         ));
         cbPreciosDias.getItems().addAll(TipoPrecio.values());
         cbPreciosDias.setOnAction(event -> actualizarMontoAutomatico());
-
-        // Listener para cuando se cambie de pestaña (Tabs)
-        tvVerElementosClases.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
-            if (newTab == tapMuseos) {
-                cargarDatosMuseos();
-            } else if (newTab == tapSalas) {
-                cargarDatosSalas();
-            } else if (newTab == tapColecciones) {
-                cargarDatosColecciones();
-            } else if (newTab == tapEspecies) {
-                cargarDatosEspecies();
-            } else if (newTab == tapTematicas) {
-                cargarDatosTematicas();
-            } else if (newTab == tapPrecios) {
-                cargarDatosPrecios();
-            } else if (newTab == tapComisionesTarjeta) {
-                cargarDatosComisionesTarjetas();
-            }
-        });
+        inicializarListeners();
 
         // Listener para ComboBox de entidad seleccionada
         cbEntidadesMantenimiento.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -415,6 +398,23 @@ public class MantenimientoController implements Initializable {
                 mostrarError("No hay entidad seleccionada para filtrar.");
                 break;
         }
+    }
+
+    private void inicializarListeners() {
+        Map<Tab, Runnable> cargarDatosMap = Map.of(
+                tapMuseos, this::cargarDatosMuseos,
+                tapSalas, this::cargarDatosSalas,
+                tapColecciones, this::cargarDatosColecciones,
+                tapEspecies, this::cargarDatosEspecies,
+                tapTematicas, this::cargarDatosTematicas,
+                tapPrecios, this::cargarDatosPrecios,
+                tapComisionesTarjeta, this::cargarDatosComisionesTarjetas
+        );
+
+        tvVerElementosClases.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            cargarDatosMap.getOrDefault(newTab, () -> {
+            }).run();
+        });
     }
 
     @FXML
