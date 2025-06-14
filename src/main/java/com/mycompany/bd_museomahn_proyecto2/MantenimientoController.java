@@ -3,6 +3,7 @@ package com.mycompany.bd_museomahn_proyecto2;
 import controladores.ColeccionesJpaController;
 import controladores.EspeciesJpaController;
 import controladores.MuseosJpaController;
+import controladores.PreciosJpaController;
 import controladores.SalasJpaController;
 import controladores.TematicasJpaController;
 import java.math.BigDecimal;
@@ -24,6 +25,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Accordion;
@@ -40,6 +42,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import persistencia.Colecciones;
 import persistencia.Comisionestarjetas;
@@ -135,6 +138,7 @@ public class MantenimientoController implements Initializable {
     private final ColeccionesJpaController coleccionesJpa = new ColeccionesJpaController();
     private final EspeciesJpaController especiesJpa = new EspeciesJpaController();
     private final TematicasJpaController tematicasJpa = new TematicasJpaController();
+    private final PreciosJpaController preciosJpa = new PreciosJpaController();
     @FXML
     private ComboBox<String> cbTipoMuseo;
     @FXML
@@ -161,6 +165,8 @@ public class MantenimientoController implements Initializable {
     private ComboBox<Salas> cbElegirSalaColeccion;
     @FXML
     private ComboBox<Colecciones> cbElegirColeccionEspecies;
+    @FXML
+    private ComboBox<TipoPrecio> cbPreciosDias;
 
     /**
      * Initializes the controller class.
@@ -173,6 +179,8 @@ public class MantenimientoController implements Initializable {
         cbEntidadesMantenimiento.setItems(FXCollections.observableArrayList(
                 "MUSEOS", "SALAS", "COLECCIONES", "ESPECIES", "TEMÁTICAS", "PRECIOS", "COMISIONES DE TARJETAS"
         ));
+        cbPreciosDias.getItems().addAll(TipoPrecio.values());
+        cbPreciosDias.setOnAction(event -> actualizarMontoAutomatico());
 
         // Listener para cuando se cambie de pestaña (Tabs)
         tvVerElementosClases.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
@@ -186,6 +194,8 @@ public class MantenimientoController implements Initializable {
                 cargarDatosEspecies();
             } else if (newTab == tapTematicas) {
                 cargarDatosTematicas();
+            } else if (newTab == tapPrecios) {
+                cargarDatosPrecios();
             }
         });
 
@@ -216,6 +226,11 @@ public class MantenimientoController implements Initializable {
                     case "TEMÁTICAS":
                         cargarDatosTematicas();
                         tvVerElementosClases.getSelectionModel().select(tapTematicas);
+                        break;
+                    case "PREECIOS":
+                        cargarDatosPrecios();
+                        tvVerElementosClases.getSelectionModel().select(tapPrecios);
+                        break;
                 }
             }
         });
@@ -329,6 +344,42 @@ public class MantenimientoController implements Initializable {
                         .collect(Collectors.toList());
                 tvTematicas.setItems(FXCollections.observableArrayList(listaTematicasFiltrada));
                 break;
+
+            case "PRECIOS":
+                List<Precios> listaPreciosFiltrada = preciosJpa.findPreciosEntities()
+                        .stream()
+                        .filter(precio -> {
+                            Salas sala = precio.getIdSala();
+                            String nombreSala = (sala != null) ? sala.getNombre().toLowerCase() : "sin sala";
+
+                            switch (filtroSeleccionado) {
+                                case "Tipos de Precio":
+                                    return (precio.getPrecioLunesSabado().toString().contains(textoFiltro)
+                                            || precio.getPrecioDomingo().toString().contains(textoFiltro));
+                                case "Tipo Sala":
+                                    return nombreSala.contains(textoFiltro);
+                                default:
+                                    return true;
+                            }
+                        })
+                        .collect(Collectors.toList());
+                tvPrecios.setItems(FXCollections.observableArrayList(listaPreciosFiltrada));
+                // Si el usuario selecciona una sala, llenar automáticamente el campo con su precio
+                tvPrecios.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal != null) {
+                        txtFiltroBusqueda.setText(newVal.getIdSala().getNombre() + " - $" + newVal.getPrecioDomingo());
+                    }
+                });
+                // Permitir que el usuario borre manualmente el filtro para recargar todos los datos
+                txtFiltroBusqueda.setOnKeyTyped(new EventHandler<KeyEvent>() {
+                    @Override
+                    public void handle(KeyEvent event) {
+                        if (txtFiltroBusqueda.getText().isEmpty()) {
+                            tvPrecios.setItems(FXCollections.observableArrayList(preciosJpa.findPreciosEntities()));
+                        }
+                    }
+                });
+                break;
             default:
                 mostrarError("No hay entidad seleccionada para filtrar.");
                 break;
@@ -354,6 +405,9 @@ public class MantenimientoController implements Initializable {
                 break;
             case "TEMÁTICAS":
                 editarTemáticas();
+                break;
+            case "PRECIOS":
+                editarPrecios();
                 break;
             default:
                 mostrarError("Entidad no reconocida para edición");
@@ -463,6 +517,26 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void editarPrecios() {
+        Precios precioSeleccionado = tvPrecios.getSelectionModel().getSelectedItem();
+
+        if (precioSeleccionado != null) {
+            cbElegirSalaColeccion.setValue(precioSeleccionado.getIdSala());
+
+            // Determinar qué tipo de precio cargar basado en la selección previa
+            if (precioSeleccionado.getPrecioDomingo() != null) {
+                cbPreciosDias.setValue(TipoPrecio.DOMINGO);
+                txtCampo3.setText(String.valueOf(precioSeleccionado.getPrecioDomingo()));
+            } else {
+                cbPreciosDias.setValue(TipoPrecio.LUNES_SABADO);
+                txtCampo3.setText(String.valueOf(precioSeleccionado.getPrecioLunesSabado()));
+            }
+            modoEdicion = true;
+        } else {
+            mostrarError("Debe seleccionar un precio para editar.");
+        }
+    }
+
     @FXML
     private void btnEliminarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
@@ -547,6 +621,21 @@ public class MantenimientoController implements Initializable {
                     mostrarError("Seleccione una temática para eliminar.");
                 }
                 break;
+            case "PRECIOS":
+                Precios precio = tvPrecios.getSelectionModel().getSelectedItem();
+                if (precio != null) {
+                    try {
+                        preciosJpa.delete(precio.getIdPrecio());
+                        cargarDatosPrecios();
+                        mostrarAlerta("Precio eliminado.");
+                        limpiarCampos();
+                    } catch (Exception e) {
+                        mostrarError("Error al eliminar precio: " + e.getMessage());
+                    }
+                } else {
+                    mostrarError("Seleccione un precio para eliminar.");
+                }
+                break;
             default:
                 mostrarError("Entidad no válida para eliminar.");
                 break;
@@ -572,6 +661,9 @@ public class MantenimientoController implements Initializable {
                 break;
             case "TEMÁTICAS":
                 insertarTemáticas();
+                break;
+            case "PRECIOS":
+                insertarPrecios();
                 break;
             default:
                 System.out.println("Entidad no reconocida: " + entidad);
@@ -734,6 +826,35 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void insertarPrecios() {
+        if (getEntidadSeleccionada().equals("PRECIOS")) {
+            Precios nuevoPrecio = new Precios();
+            nuevoPrecio.setIdSala(cbElegirSalaColeccion.getValue());
+            TipoPrecio tipoSeleccionado = cbPreciosDias.getSelectionModel().getSelectedItem();
+            // Verificar si ya existe un precio con el mismo tipo para la sala
+            boolean existePrecio = preciosJpa.findPreciosEntities().stream()
+                    .anyMatch(p -> p.getIdSala().equals(nuevoPrecio.getIdSala())
+                    && ((tipoSeleccionado == TipoPrecio.LUNES_SABADO && p.getPrecioLunesSabado().compareTo(new BigDecimal(txtCampo3.getText())) == 0)
+                    || (tipoSeleccionado == TipoPrecio.DOMINGO && p.getPrecioDomingo().compareTo(new BigDecimal(txtCampo3.getText())) == 0)));
+
+            if (!existePrecio) {
+                if (tipoSeleccionado == TipoPrecio.LUNES_SABADO) {
+                    nuevoPrecio.setPrecioLunesSabado(new BigDecimal(txtCampo3.getText()));
+                    nuevoPrecio.setPrecioDomingo(BigDecimal.ZERO);
+                } else {
+                    nuevoPrecio.setPrecioDomingo(new BigDecimal(txtCampo3.getText()));
+                    nuevoPrecio.setPrecioLunesSabado(BigDecimal.ZERO);
+                }
+                preciosJpa.create(nuevoPrecio);
+                cargarDatosPrecios();
+                mostrarAlerta("Precio insertado correctamente.");
+                limpiarCampos();
+            } else {
+                mostrarError("Ya existe un precio de este tipo para la sala seleccionada.");
+            }
+        }
+    }
+
     @FXML
     private void btnGuardarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
@@ -754,6 +875,9 @@ public class MantenimientoController implements Initializable {
                     break;
                 case "TEMÁTICAS":
                     guardarCambiosTemáticas();
+                    break;
+                case "PRECIOS":
+                    guardarCambiosPrecios();
                     break;
                 default:
                     mostrarError("Entidad no reconocida para guardar cambios.");
@@ -869,19 +993,15 @@ public class MantenimientoController implements Initializable {
                 mostrarError("Peso y Tamaño deben ser valores numéricos!");
                 return;
             }
-
-            // Actualizar datos
             especieSeleccionada.setNombreCientificoDeEspecie(txtCampo1.getText());
             especieSeleccionada.setNombreComunDeEspecie(txtCampo2.getText());
             especieSeleccionada.setPeso(new BigDecimal(txtCampo3.getText()));
             especieSeleccionada.setTamanio(new BigDecimal(txtCampo4.getText()));
             especieSeleccionada.setCaracteristicas(txtAreaDescripcion.getText());
-
             // Convertir fecha de extinción
             LocalDate fechaExtincion = datePickerSelect.getValue();
             especieSeleccionada.setFechaExtincion(fechaExtincion != null ? Date.from(fechaExtincion.atStartOfDay(ZoneId.systemDefault()).toInstant()) : null);
             especieSeleccionada.setEpoca(txtCampo5.getText().trim());
-
             // Asignar colección
             Colecciones coleccionSeleccionada = cbElegirColeccionEspecies.getSelectionModel().getSelectedItem();
             if (coleccionSeleccionada != null) {
@@ -890,7 +1010,6 @@ public class MantenimientoController implements Initializable {
                 mostrarError("Debe seleccionar una colección para la especie!");
                 return;
             }
-
             // Guardar cambios en BD
             try {
                 especiesJpa.edit(especieSeleccionada);
@@ -934,6 +1053,41 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void guardarCambiosPrecios() {
+        Precios precioSeleccionado = tvPrecios.getSelectionModel().getSelectedItem();
+        if (precioSeleccionado != null) {
+            precioSeleccionado.setIdSala(cbElegirSalaColeccion.getValue());
+            TipoPrecio tipoSeleccionado = cbPreciosDias.getSelectionModel().getSelectedItem();
+            // Verificar si ya existe un precio del mismo tipo en la misma sala
+            boolean existePrecioDuplicado = preciosJpa.findPreciosEntities().stream()
+                    .anyMatch(p -> !p.getIdPrecio().equals(precioSeleccionado.getIdPrecio())
+                    && // Evitar que compare con sí mismo
+                    p.getIdSala().equals(precioSeleccionado.getIdSala())
+                    && ((tipoSeleccionado == TipoPrecio.LUNES_SABADO && p.getPrecioLunesSabado().compareTo(new BigDecimal(txtCampo3.getText())) == 0)
+                    || (tipoSeleccionado == TipoPrecio.DOMINGO && p.getPrecioDomingo().compareTo(new BigDecimal(txtCampo3.getText())) == 0)));
+            if (!existePrecioDuplicado) {
+                if (tipoSeleccionado == TipoPrecio.LUNES_SABADO) {
+                    precioSeleccionado.setPrecioLunesSabado(new BigDecimal(txtCampo3.getText()));
+                } else if (tipoSeleccionado == TipoPrecio.DOMINGO) {
+                    precioSeleccionado.setPrecioDomingo(new BigDecimal(txtCampo3.getText()));
+                }
+                try {
+                    preciosJpa.edit(precioSeleccionado);
+                    cargarDatosPrecios();
+                    mostrarAlerta("Cambios guardados correctamente.");
+                } catch (Exception e) {
+                    mostrarError("Error al guardar cambios de precios: " + e.getMessage());
+                }
+                modoEdicion = false;
+                limpiarCampos();
+            } else {
+                mostrarError("Ya existe un precio del mismo tipo para esta sala.");
+            }
+        } else {
+            mostrarError("Debe seleccionar un precio para guardar los cambios.");
+        }
+    }
+
     @FXML
     private void btnCancelarOnAction(ActionEvent event) {
         limpiarCampos();
@@ -952,6 +1106,8 @@ public class MantenimientoController implements Initializable {
             return "ESPECIES";
         } else if (tabActivo == tapTematicas) {
             return "TEMÁTICAS";
+        } else if (tabActivo == tapPrecios) {
+            return "PRECIOS";
         }
         return "";
     }
@@ -989,7 +1145,6 @@ public class MantenimientoController implements Initializable {
     }
 
     public void cargarDatosSalas() {
-        // Limpiar columnas anteriores
         tvSalas.getColumns().clear();
 
         TableColumn<Salas, String> colNombre = new TableColumn<>("Nombre Sala");
@@ -1095,6 +1250,24 @@ public class MantenimientoController implements Initializable {
         tvTematicas.setItems(FXCollections.observableArrayList(listaTematicas));
     }
 
+    public void cargarDatosPrecios() {
+        tvPrecios.getColumns().clear();
+
+        TableColumn<Precios, String> colSala = new TableColumn<>("Sala");
+        colSala.setCellValueFactory(cellData
+                -> new SimpleStringProperty(cellData.getValue().getIdSala().getNombre()));
+
+        TableColumn<Precios, BigDecimal> colPrecioLunesSabado = new TableColumn<>("Precio Lun-Sab");
+        colPrecioLunesSabado.setCellValueFactory(new PropertyValueFactory<>("precioLunesSabado"));
+
+        TableColumn<Precios, BigDecimal> colPrecioDomingo = new TableColumn<>("Precio Domingo");
+        colPrecioDomingo.setCellValueFactory(new PropertyValueFactory<>("precioDomingo"));
+
+        tvPrecios.getColumns().addAll(colSala, colPrecioLunesSabado, colPrecioDomingo);
+        Collection<Precios> listaPrecios = preciosJpa.findPreciosEntities();
+        tvPrecios.setItems(FXCollections.observableArrayList(listaPrecios));
+    }
+
     private void mostrarAlerta(String mensaje) {
         Alert alerta = new Alert(Alert.AlertType.INFORMATION);
         alerta.setContentText(mensaje);
@@ -1166,6 +1339,7 @@ public class MantenimientoController implements Initializable {
             case "PRECIOS":
                 mostrarCamposPrecios();
                 tvVerElementosClases.getSelectionModel().select(tapPrecios);
+                cargarDatosPrecios();
                 break;
 
             case "COMISIONES DE TARJETAS":
@@ -1197,6 +1371,9 @@ public class MantenimientoController implements Initializable {
                 break;
             case "TEMÁTICAS":
                 filtros = Arrays.asList("Nombre Temática", "Tipo Sala");
+                break;
+            case "PRECIOS":
+                filtros = Arrays.asList("Tipos de Precio", "Tipo Sala");
                 break;
             default:
                 filtros = Collections.emptyList();
@@ -1369,14 +1546,46 @@ public class MantenimientoController implements Initializable {
     }
 
     private void mostrarCamposPrecios() {
-        txtCampo1.setVisible(true); // Nombre del precio
-        txtCampo2.setVisible(true); // Monto
-        datePickerSelect.setVisible(true); // Fecha inicio
-        datePickerSelectAuxiliar.setVisible(true); // Fecha fin
-        txtCampo1.setPromptText("Tipo de precio");
-        txtCampo2.setPromptText("Monto");
-        datePickerSelect.setPromptText("Fecha inicio");
-        datePickerSelectAuxiliar.setPromptText("Fecha fin");
+        txtCampo3.setVisible(true); // Monto
+        cbPreciosDias.setVisible(true); // Dias LUN-SAB / DOM
+        cbElegirSalaColeccion.setVisible(true); // Sala asociada al precio
+        txtCampo3.setEditable(false);
+        txtCampo3.setPromptText("Monto $$");
+        cbPreciosDias.setPromptText("Dias Disponibles");
+        cbElegirSalaColeccion.setPromptText("Tipo de Sala");
+
+        ObservableList<Salas> listaSalas = FXCollections.observableArrayList(salasJpa.findSalasEntities());
+        cbElegirSalaColeccion.setItems(listaSalas);
+        cbElegirSalaColeccion.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(Salas item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNombre());
+            }
+        });
+
+        cbElegirSalaColeccion.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Salas item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNombre());
+            }
+        });
+    }
+
+    public enum TipoPrecio {
+        LUNES_SABADO,
+        DOMINGO;
+    }
+
+    private void actualizarMontoAutomatico() {
+        TipoPrecio tipoSeleccionado = cbPreciosDias.getSelectionModel().getSelectedItem();
+
+        if (tipoSeleccionado == TipoPrecio.DOMINGO) {
+            txtCampo3.setText("7.50"); // Precio fijo de domingo
+        } else if (tipoSeleccionado == TipoPrecio.LUNES_SABADO) {
+            txtCampo3.setText("10.00"); // Precio fijo de lunes a sábado
+        }
     }
 
     private void mostrarCamposComisiones() {
@@ -1388,7 +1597,6 @@ public class MantenimientoController implements Initializable {
 
 // ---------------- Ocultar todo por defecto ----------------
     private void ocultarTodosLosCampos() {
-        // TextFields
         txtCampo1.setVisible(false);
         txtCampo2.setVisible(false);
         txtCampo3.setVisible(false);
@@ -1400,17 +1608,12 @@ public class MantenimientoController implements Initializable {
         cbTipoTematicaSalas.setVisible(false);
         cbElegirSalaColeccion.setVisible(false);
         cbElegirColeccionEspecies.setVisible(false);
-        // DatePickers
         datePickerSelect.setVisible(false);
         datePickerSelectAuxiliar.setVisible(false);
-
-        // ComboBox
+        cbPreciosDias.setVisible(false);
         cbTipoTarjeta.setVisible(false);
         cbElegirMuseoSalas.setVisible(false);
-        // TextArea
         txtAreaDescripcion.setVisible(false);
-
-        // Limpiar promptTexts
         limpiarPrompts();
     }
 
@@ -1432,6 +1635,7 @@ public class MantenimientoController implements Initializable {
         cbElegirSalaColeccion.setPromptText("");
         cbElegirMuseoSalas.setPromptText("");
         cbElegirColeccionEspecies.setPromptText("");
+        cbPreciosDias.setPromptText("");
     }
 
     @FXML

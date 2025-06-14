@@ -98,6 +98,7 @@
             <ComboBox fx:id="cbElegirMuseoSalas" layoutX="340.0" layoutY="460.0" prefWidth="150.0" />
             <ComboBox fx:id="cbElegirSalaColeccion" layoutX="340.0" layoutY="460.0" prefWidth="150.0" />
             <ComboBox fx:id="cbElegirColeccionEspecies" layoutX="132.0" layoutY="423.0" prefHeight="25.0" prefWidth="343.0" />
+            <ComboBox fx:id="cbPreciosDias" layoutX="130.0" layoutY="460.0" prefWidth="150.0" />
          </children>
       </Pane>
       <Pane layoutX="45.0" layoutY="76.0" prefHeight="741.0" prefWidth="343.0" style="-fx-background-color: cyan sky;">
