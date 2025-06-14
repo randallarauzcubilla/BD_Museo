@@ -7,6 +7,7 @@ import controladores.MuseosJpaController;
 import controladores.PreciosJpaController;
 import controladores.SalasJpaController;
 import controladores.TematicasJpaController;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -29,12 +30,16 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Cursor;
+import javafx.scene.Parent;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -170,6 +175,15 @@ public class MantenimientoController implements Initializable {
     private ComboBox<Colecciones> cbElegirColeccionEspecies;
     @FXML
     private ComboBox<TipoPrecio> cbPreciosDias;
+    @FXML
+    private Pane paneVistaMantenimiento;
+    @FXML
+    private Pane paneOpcionesVista;
+    private String opcionSeleccionada;
+    @FXML
+    private Label lbVenderEntrada;
+    @FXML
+    private Label lbValidarEntrada;
 
     /**
      * Initializes the controller class.
@@ -228,6 +242,29 @@ public class MantenimientoController implements Initializable {
         cbEntidadesMantenimiento.getSelectionModel().select("MUSEOS");
         tvVerElementosClases.getSelectionModel().select(tapMuseos);
         cargarDatosMuseos();
+
+        lbVenderEntrada.setCursor(Cursor.HAND);
+        lbValidarEntrada.setCursor(Cursor.HAND);
+        lbVenderEntrada.setOnMouseClicked(event -> {
+            opcionSeleccionada = "Vender Entrada";
+            cambiarVistaMantenimiento("EntradasMuseo.fxml");
+        });
+
+        lbValidarEntrada.setOnMouseClicked(event -> {
+            opcionSeleccionada = "Validar Entrada";
+            cambiarVistaMantenimiento("ValidarEntrada.fxml");
+        });
+        
+}
+
+private void cambiarVistaMantenimiento(String vista) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(vista));
+            Parent nuevaVista = loader.load();
+            paneVistaMantenimiento.getChildren().setAll(nuevaVista);
+        } catch (IOException e) {
+            mostrarError("Error al cargar la vista: " + e.getMessage());
+        }
     }
 
     private String getEntidadSeleccionada() {
@@ -238,7 +275,7 @@ public class MantenimientoController implements Initializable {
     }
 
     @FXML
-    private void btnFiltrarOnAction(ActionEvent event) {
+private void btnFiltrarOnAction(ActionEvent event) {
         String entidadSeleccionada = obtenerEntidadSeleccionada();
         String textoFiltro = txtFiltroBusqueda.getText().trim().toLowerCase();
         String filtroSeleccionado = cbFiltroElementos.getSelectionModel().getSelectedItem();
@@ -364,7 +401,7 @@ public class MantenimientoController implements Initializable {
                 // Permitir que el usuario borre manualmente el filtro para recargar todos los datos
                 txtFiltroBusqueda.setOnKeyTyped(new EventHandler<KeyEvent>() {
                     @Override
-                    public void handle(KeyEvent event) {
+public void handle(KeyEvent event) {
                         if (txtFiltroBusqueda.getText().isEmpty()) {
                             tvPrecios.setItems(FXCollections.observableArrayList(preciosJpa.findPreciosEntities()));
                         }
@@ -418,7 +455,7 @@ public class MantenimientoController implements Initializable {
     }
 
     @FXML
-    private void btnEditarOnAction(ActionEvent event) {
+private void btnEditarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
 
         switch (entidad) {
@@ -585,7 +622,7 @@ public class MantenimientoController implements Initializable {
     }
 
     @FXML
-    private void btnEliminarOnAction(ActionEvent event) {
+private void btnEliminarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
 
         switch (entidad) {
@@ -705,7 +742,7 @@ public class MantenimientoController implements Initializable {
     }
 
     @FXML
-    private void btnInsertarOnAction(ActionEvent event) {
+private void btnInsertarOnAction(ActionEvent event) {
         String entidad = cbEntidadesMantenimiento.getSelectionModel().getSelectedItem();
 
         switch (entidad) {
@@ -949,7 +986,7 @@ public class MantenimientoController implements Initializable {
     }
 
     @FXML
-    private void btnGuardarOnAction(ActionEvent event) {
+private void btnGuardarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
 
         if (modoEdicion) {
@@ -1216,7 +1253,7 @@ public class MantenimientoController implements Initializable {
     }
 
     @FXML
-    private void btnCancelarOnAction(ActionEvent event) {
+private void btnCancelarOnAction(ActionEvent event) {
         limpiarCampos();
     }
 
@@ -1569,7 +1606,7 @@ public class MantenimientoController implements Initializable {
         // Mostrar solo el nombre del museo en el ComboBox
         cbElegirMuseoSalas.setCellFactory(lv -> new ListCell<>() {
             @Override
-            protected void updateItem(Museos item, boolean empty) {
+protected void updateItem(Museos item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1577,7 +1614,7 @@ public class MantenimientoController implements Initializable {
 
         cbElegirMuseoSalas.setButtonCell(new ListCell<>() {
             @Override
-            protected void updateItem(Museos item, boolean empty) {
+protected void updateItem(Museos item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1606,7 +1643,7 @@ public class MantenimientoController implements Initializable {
 
         cbElegirSalaColeccion.setCellFactory(lv -> new ListCell<>() {
             @Override
-            protected void updateItem(Salas item, boolean empty) {
+protected void updateItem(Salas item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1614,7 +1651,7 @@ public class MantenimientoController implements Initializable {
 
         cbElegirSalaColeccion.setButtonCell(new ListCell<>() {
             @Override
-            protected void updateItem(Salas item, boolean empty) {
+protected void updateItem(Salas item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1647,7 +1684,7 @@ public class MantenimientoController implements Initializable {
         // Configurar cómo se muestra la lista en el ComboBox
         cbElegirColeccionEspecies.setCellFactory(lv -> new ListCell<>() {
             @Override
-            protected void updateItem(Colecciones item, boolean empty) {
+protected void updateItem(Colecciones item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombreColeccion());
             }
@@ -1655,7 +1692,7 @@ public class MantenimientoController implements Initializable {
 
         cbElegirColeccionEspecies.setButtonCell(new ListCell<>() {
             @Override
-            protected void updateItem(Colecciones item, boolean empty) {
+protected void updateItem(Colecciones item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombreColeccion());
             }
@@ -1678,7 +1715,7 @@ public class MantenimientoController implements Initializable {
 
         cbElegirSalaColeccion.setCellFactory(lv -> new ListCell<>() {
             @Override
-            protected void updateItem(Salas item, boolean empty) {
+protected void updateItem(Salas item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1686,7 +1723,7 @@ public class MantenimientoController implements Initializable {
 
         cbElegirSalaColeccion.setButtonCell(new ListCell<>() {
             @Override
-            protected void updateItem(Salas item, boolean empty) {
+protected void updateItem(Salas item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1706,7 +1743,7 @@ public class MantenimientoController implements Initializable {
         cbElegirSalaColeccion.setItems(listaSalas);
         cbElegirSalaColeccion.setCellFactory(lv -> new ListCell<>() {
             @Override
-            protected void updateItem(Salas item, boolean empty) {
+protected void updateItem(Salas item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1714,19 +1751,20 @@ public class MantenimientoController implements Initializable {
 
         cbElegirSalaColeccion.setButtonCell(new ListCell<>() {
             @Override
-            protected void updateItem(Salas item, boolean empty) {
+protected void updateItem(Salas item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
         });
-    }
+
+}
 
     public enum TipoPrecio {
-        LUNES_SABADO,
-        DOMINGO;
-    }
+    LUNES_SABADO,
+    DOMINGO;
+}
 
-    private void actualizarMontoAutomatico() {
+private void actualizarMontoAutomatico() {
         TipoPrecio tipoSeleccionado = cbPreciosDias.getSelectionModel().getSelectedItem();
 
         if (tipoSeleccionado == TipoPrecio.DOMINGO) {
@@ -1788,7 +1826,7 @@ public class MantenimientoController implements Initializable {
     }
 
     @FXML
-    private void btnSalirOnAction(ActionEvent event) {
+private void btnSalirOnAction(ActionEvent event) {
         System.exit(0);
     }
 }

@@ -17,7 +17,7 @@
 
 <Pane fx:id="ventanaPrincipal" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1000.0" prefWidth="1530.0" style="-fx-background-color: silver;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.bd_museomahn_proyecto2.MantenimientoController">
    <children>
-      <Pane layoutX="388.0" layoutY="76.0" prefHeight="741.0" prefWidth="1102.0" style="-fx-background-color: blue sky;">
+      <Pane fx:id="paneVistaMantenimiento" layoutX="388.0" layoutY="76.0" prefHeight="740.0" prefWidth="1100.0" style="-fx-background-color: blue sky;">
          <children>
             <Button fx:id="btnFiltrar" layoutX="751.0" layoutY="102.0" mnemonicParsing="false" onAction="#btnFiltrarOnAction" prefHeight="42.0" prefWidth="114.0" text="FILTRAR" />
             <ComboBox fx:id="cbFiltroElementos" layoutX="513.0" layoutY="105.0" prefHeight="36.0" prefWidth="195.0" />
@@ -101,7 +101,7 @@
             <ComboBox fx:id="cbPreciosDias" layoutX="130.0" layoutY="460.0" prefWidth="150.0" />
          </children>
       </Pane>
-      <Pane layoutX="45.0" layoutY="76.0" prefHeight="741.0" prefWidth="343.0" style="-fx-background-color: cyan sky;">
+      <Pane fx:id="paneOpcionesVista" layoutX="45.0" layoutY="76.0" prefHeight="741.0" prefWidth="343.0" style="-fx-background-color: cyan sky;">
          <children>
             <Accordion fx:id="actualizarVista" layoutX="46.0" layoutY="258.0" prefHeight="452.0" prefWidth="249.0">
               <panes>
@@ -118,7 +118,19 @@
                 </TitledPane>
                 <TitledPane fx:id="titledPaneEntradas" animated="false" text="ENTRADAS">
                   <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <Label fx:id="lbVenderEntrada" layoutX="33.0" layoutY="22.0" prefHeight="26.0" prefWidth="175.0" text="Vender Entrada" textFill="#0f63c4">
+                                 <font>
+                                    <Font name="Arial Black" size="19.0" />
+                                 </font>
+                              </Label>
+                              <Label fx:id="lbValidarEntrada" layoutX="33.0" layoutY="75.0" prefHeight="36.0" prefWidth="195.0" text="Validar Entrada" textFill="#19b43f">
+                                 <font>
+                                    <Font name="Arial Black" size="19.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
                   </content>
                      <font>
                         <Font name="Arial Black" size="22.0" />
