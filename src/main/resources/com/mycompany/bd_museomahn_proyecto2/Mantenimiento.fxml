@@ -85,7 +85,7 @@
                         <TableView fx:id="tvPrecios" prefHeight="174.0" prefWidth="760.0" />
                      </content>
                   </Tab>
-                  <Tab fx:id="tapComisionesTarjeta" text="COMISIONES DE TARJETA">
+                  <Tab fx:id="tapComisionesTarjeta" text="COMISIONES DE TARJETAS">
                      <content>
                         <TableView fx:id="tvComisionesTarjeta" prefHeight="174.0" prefWidth="760.0" />
                      </content>

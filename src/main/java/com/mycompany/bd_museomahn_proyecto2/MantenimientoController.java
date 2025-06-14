@@ -1,6 +1,7 @@
 package com.mycompany.bd_museomahn_proyecto2;
 
 import controladores.ColeccionesJpaController;
+import controladores.ComisionestarjetasJpaController;
 import controladores.EspeciesJpaController;
 import controladores.MuseosJpaController;
 import controladores.PreciosJpaController;
@@ -96,7 +97,7 @@ public class MantenimientoController implements Initializable {
     @FXML
     private DatePicker datePickerSelectAuxiliar;
     @FXML
-    private ComboBox<Precios> cbTipoTarjeta;
+    private ComboBox<String> cbTipoTarjeta;
     @FXML
     private TextArea txtAreaDescripcion;
     @FXML
@@ -139,6 +140,7 @@ public class MantenimientoController implements Initializable {
     private final EspeciesJpaController especiesJpa = new EspeciesJpaController();
     private final TematicasJpaController tematicasJpa = new TematicasJpaController();
     private final PreciosJpaController preciosJpa = new PreciosJpaController();
+    private final ComisionestarjetasJpaController comisionesJpa = new ComisionestarjetasJpaController();
     @FXML
     private ComboBox<String> cbTipoMuseo;
     @FXML
@@ -196,6 +198,8 @@ public class MantenimientoController implements Initializable {
                 cargarDatosTematicas();
             } else if (newTab == tapPrecios) {
                 cargarDatosPrecios();
+            } else if (newTab == tapComisionesTarjeta) {
+                cargarDatosComisionesTarjetas();
             }
         });
 
@@ -227,9 +231,13 @@ public class MantenimientoController implements Initializable {
                         cargarDatosTematicas();
                         tvVerElementosClases.getSelectionModel().select(tapTematicas);
                         break;
-                    case "PREECIOS":
+                    case "PRECIOS":
                         cargarDatosPrecios();
                         tvVerElementosClases.getSelectionModel().select(tapPrecios);
+                        break;
+                    case "COMISIONES DE TARJETAS":
+                        cargarDatosComisionesTarjetas();
+                        tvVerElementosClases.getSelectionModel().select(tapComisionesTarjeta);
                         break;
                 }
             }
@@ -380,6 +388,29 @@ public class MantenimientoController implements Initializable {
                     }
                 });
                 break;
+
+            case "COMISIONES DE TARJETAS":
+                List<Comisionestarjetas> listaComisionesFiltrada = comisionesJpa.findComisionesEntities()
+                        .stream()
+                        .filter(comision -> {
+                            switch (filtroSeleccionado) {
+                                case "Tipo Tarjeta":
+                                    return comision.getTipoTarjeta().toLowerCase().contains(textoFiltro);
+                                case "Porcentaje Comisión":
+                                    return comision.getPorcentajeComision().toString().contains(textoFiltro);
+                                default:
+                                    return true;
+                            }
+                        })
+                        .collect(Collectors.toList());
+                tvComisionesTarjeta.setItems(FXCollections.observableArrayList(listaComisionesFiltrada));
+                tvComisionesTarjeta.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal != null) {
+                        cbTipoTarjeta.setValue(newVal.getTipoTarjeta());
+                        txtCampo1.setText(newVal.getPorcentajeComision().toString());
+                    }
+                });
+                break;
             default:
                 mostrarError("No hay entidad seleccionada para filtrar.");
                 break;
@@ -408,6 +439,9 @@ public class MantenimientoController implements Initializable {
                 break;
             case "PRECIOS":
                 editarPrecios();
+                break;
+            case "COMISIONES DE TARJETAS":
+                editarComisionTarjeta();
                 break;
             default:
                 mostrarError("Entidad no reconocida para edición");
@@ -537,6 +571,19 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void editarComisionTarjeta() {
+        Comisionestarjetas comisionSeleccionada = tvComisionesTarjeta.getSelectionModel().getSelectedItem();
+
+        if (comisionSeleccionada != null) {
+            cbTipoTarjeta.setValue(comisionSeleccionada.getTipoTarjeta());
+            txtCampo1.setText(comisionSeleccionada.getPorcentajeComision().toString());
+
+            modoEdicion = true;
+        } else {
+            mostrarError("Debe seleccionar una comisión para editar.");
+        }
+    }
+
     @FXML
     private void btnEliminarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
@@ -636,6 +683,21 @@ public class MantenimientoController implements Initializable {
                     mostrarError("Seleccione un precio para eliminar.");
                 }
                 break;
+            case "COMISIONES DE TARJETAS":
+                Comisionestarjetas comision = tvComisionesTarjeta.getSelectionModel().getSelectedItem();
+                if (comision != null) {
+                    try {
+                        comisionesJpa.delete(comision);
+                        cargarDatosComisionesTarjetas();
+                        mostrarAlerta("Comisión eliminada.");
+                        limpiarCampos();
+                    } catch (Exception e) {
+                        mostrarError("Error al eliminar comisión: " + e.getMessage());
+                    }
+                } else {
+                    mostrarError("Seleccione una comisión para eliminar.");
+                }
+                break;
             default:
                 mostrarError("Entidad no válida para eliminar.");
                 break;
@@ -664,6 +726,9 @@ public class MantenimientoController implements Initializable {
                 break;
             case "PRECIOS":
                 insertarPrecios();
+                break;
+            case "COMISIONES DE TARJETAS":
+                insertarComisionesTarjeta();
                 break;
             default:
                 System.out.println("Entidad no reconocida: " + entidad);
@@ -855,6 +920,34 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void insertarComisionesTarjeta() {
+        if (getEntidadSeleccionada().equals("COMISIONES DE TARJETAS")) {
+            String tipoTarjeta = cbTipoTarjeta.getValue();
+
+            if (existeComision(tipoTarjeta)) {
+                mostrarError("Ya existe una comisión registrada para esta tarjeta.");
+                return;
+            }
+            Comisionestarjetas nuevaComision = new Comisionestarjetas();
+            nuevaComision.setTipoTarjeta(tipoTarjeta);
+            nuevaComision.setPorcentajeComision(new BigDecimal(txtCampo1.getText()));
+
+            try {
+                comisionesJpa.create(nuevaComision);
+                cargarDatosComisionesTarjetas();
+                mostrarAlerta("Comisión insertada correctamente.");
+                limpiarCampos();
+            } catch (Exception e) {
+                mostrarError("Error al insertar comisión: " + e.getMessage());
+            }
+        }
+    }
+
+    private boolean existeComision(String tipoTarjeta) {
+        return comisionesJpa.findComisionesEntities().stream()
+                .anyMatch(comision -> comision.getTipoTarjeta().equalsIgnoreCase(tipoTarjeta));
+    }
+
     @FXML
     private void btnGuardarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
@@ -878,6 +971,9 @@ public class MantenimientoController implements Initializable {
                     break;
                 case "PRECIOS":
                     guardarCambiosPrecios();
+                    break;
+                case "COMISIONES DE TARJETAS":
+                    guardarCambiosComisionesTarjeta();
                     break;
                 default:
                     mostrarError("Entidad no reconocida para guardar cambios.");
@@ -1088,6 +1184,37 @@ public class MantenimientoController implements Initializable {
         }
     }
 
+    private void guardarCambiosComisionesTarjeta() {
+        Comisionestarjetas comisionSeleccionada = tvComisionesTarjeta.getSelectionModel().getSelectedItem();
+        if (comisionSeleccionada != null) {
+            String nuevoTipoTarjeta = cbTipoTarjeta.getValue();
+            BigDecimal nuevoPorcentaje = new BigDecimal(txtCampo1.getText());
+            // Verificar si ya existe otra comisión con el mismo tipo de tarjeta y porcentaje
+            boolean duplicado = comisionesJpa.findComisionesEntities().stream()
+                    .anyMatch(comision -> comision.getTipoTarjeta().equalsIgnoreCase(nuevoTipoTarjeta)
+                    && comision.getPorcentajeComision().compareTo(nuevoPorcentaje) == 0
+                    && !comision.getIdComision().equals(comisionSeleccionada.getIdComision()));
+
+            if (duplicado) {
+                mostrarError("Ya existe una comisión registrada con este tipo de tarjeta y porcentaje.");
+                return;
+            }
+            comisionSeleccionada.setTipoTarjeta(nuevoTipoTarjeta);
+            comisionSeleccionada.setPorcentajeComision(nuevoPorcentaje);
+            try {
+                comisionesJpa.edit(comisionSeleccionada);
+                cargarDatosComisionesTarjetas();
+                mostrarAlerta("Cambios guardados correctamente.");
+            } catch (Exception e) {
+                mostrarError("Error al guardar cambios de comisión: " + e.getMessage());
+            }
+            modoEdicion = false;
+            limpiarCampos();
+        } else {
+            mostrarError("Debe seleccionar una comisión para guardar los cambios.");
+        }
+    }
+
     @FXML
     private void btnCancelarOnAction(ActionEvent event) {
         limpiarCampos();
@@ -1108,6 +1235,8 @@ public class MantenimientoController implements Initializable {
             return "TEMÁTICAS";
         } else if (tabActivo == tapPrecios) {
             return "PRECIOS";
+        } else if (tabActivo == tapComisionesTarjeta) {
+            return "COMISIONES DE TARJETAS";
         }
         return "";
     }
@@ -1268,6 +1397,21 @@ public class MantenimientoController implements Initializable {
         tvPrecios.setItems(FXCollections.observableArrayList(listaPrecios));
     }
 
+    public void cargarDatosComisionesTarjetas() {
+        tvComisionesTarjeta.getColumns().clear();
+
+        TableColumn<Comisionestarjetas, String> colTipoTarjeta = new TableColumn<>("Tipo de Tarjeta");
+        colTipoTarjeta.setCellValueFactory(new PropertyValueFactory<>("tipoTarjeta"));
+
+        TableColumn<Comisionestarjetas, BigDecimal> colPorcentajeComision = new TableColumn<>("Porcentaje Comisión");
+        colPorcentajeComision.setCellValueFactory(new PropertyValueFactory<>("porcentajeComision"));
+
+        tvComisionesTarjeta.getColumns().addAll(colTipoTarjeta, colPorcentajeComision);
+
+        Collection<Comisionestarjetas> listaComisiones = comisionesJpa.findComisionesEntities();
+        tvComisionesTarjeta.setItems(FXCollections.observableArrayList(listaComisiones));
+    }
+
     private void mostrarAlerta(String mensaje) {
         Alert alerta = new Alert(Alert.AlertType.INFORMATION);
         alerta.setContentText(mensaje);
@@ -1345,6 +1489,7 @@ public class MantenimientoController implements Initializable {
             case "COMISIONES DE TARJETAS":
                 mostrarCamposComisiones();
                 tvVerElementosClases.getSelectionModel().select(tapComisionesTarjeta);
+                cargarDatosComisionesTarjetas();
                 break;
             default:
                 // Si es una entidad no conocida, deja todo oculto.
@@ -1374,6 +1519,9 @@ public class MantenimientoController implements Initializable {
                 break;
             case "PRECIOS":
                 filtros = Arrays.asList("Tipos de Precio", "Tipo Sala");
+                break;
+            case "COMISIONES DE TARJETAS":
+                filtros = Arrays.asList("Porcentaje Comisión", "Tipo Tarjeta");
                 break;
             default:
                 filtros = Collections.emptyList();
@@ -1591,8 +1739,9 @@ public class MantenimientoController implements Initializable {
     private void mostrarCamposComisiones() {
         cbTipoTarjeta.setVisible(true);
         txtCampo1.setVisible(true); // Comisión
-        txtCampo1.setPromptText("Porcentaje comisión");
+        txtCampo1.setPromptText("Porcentaje comisión %");
         cbTipoTarjeta.setPromptText("Tipo de tarjeta");
+        cbTipoTarjeta.setItems(FXCollections.observableArrayList("VISA", "Mastercard", "American Express", "Diners Club", "Union Pay"));
     }
 
 // ---------------- Ocultar todo por defecto ----------------
