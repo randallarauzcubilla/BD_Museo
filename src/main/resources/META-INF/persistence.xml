@@ -14,6 +14,7 @@
     <class>persistencia.Valoraciones</class>
     <class>persistencia.Especies</class>
     <class>persistencia.ImagenesSalas</class>
+    <class>com.mycompany.bd_museomahn_proyecto2.ValoracionSalas</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/jdba_museo_mahn?zeroDateTimeBehavior=CONVERT_TO_NULL"/>
       <property name="javax.persistence.jdbc.user" value="root"/>
