@@ -1,6 +1,7 @@
 package controladores;
 
 import java.util.Collection;
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -58,6 +59,16 @@ public class ComisionestarjetasJpaController {
                 q.setFirstResult(firstResult);
             }
             return (Collection<Comisionestarjetas>) q.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Comisionestarjetas> findComisiones() {
+        EntityManager em = getEntityManager();
+        try {
+            return em.createQuery("SELECT c FROM Comisionestarjetas c", Comisionestarjetas.class)
+                    .getResultList();
         } finally {
             em.close();
         }
