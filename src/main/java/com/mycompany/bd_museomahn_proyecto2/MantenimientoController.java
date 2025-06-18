@@ -3,10 +3,12 @@ package com.mycompany.bd_museomahn_proyecto2;
 import controladores.ColeccionesJpaController;
 import controladores.ComisionestarjetasJpaController;
 import controladores.EspeciesJpaController;
+import controladores.ImagenesSalasJpaController;
 import controladores.MuseosJpaController;
 import controladores.PreciosJpaController;
 import controladores.SalasJpaController;
 import controladores.TematicasJpaController;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
@@ -147,6 +149,8 @@ public class MantenimientoController implements Initializable {
     private final TematicasJpaController tematicasJpa = new TematicasJpaController();
     private final PreciosJpaController preciosJpa = new PreciosJpaController();
     private final ComisionestarjetasJpaController comisionesJpa = new ComisionestarjetasJpaController();
+    private final ImagenesSalasJpaController imagenDAO = new ImagenesSalasJpaController();
+
     @FXML
     private ComboBox<String> cbTipoMuseo;
     @FXML
@@ -184,6 +188,8 @@ public class MantenimientoController implements Initializable {
     private Label lbVenderEntrada;
     @FXML
     private Label lbValidarEntrada;
+    @FXML
+    private Label lbValoracionesVista;
 
     /**
      * Initializes the controller class.
@@ -245,6 +251,7 @@ public class MantenimientoController implements Initializable {
 
         lbVenderEntrada.setCursor(Cursor.HAND);
         lbValidarEntrada.setCursor(Cursor.HAND);
+        lbValoracionesVista.setCursor(Cursor.HAND);
         lbVenderEntrada.setOnMouseClicked(event -> {
             opcionSeleccionada = "Vender Entrada";
             cambiarVistaMantenimiento("EntradasMuseo.fxml");
@@ -254,10 +261,14 @@ public class MantenimientoController implements Initializable {
             opcionSeleccionada = "Validar Entrada";
             cambiarVistaMantenimiento("ValidarEntrada.fxml");
         });
-        
-}
 
-private void cambiarVistaMantenimiento(String vista) {
+        lbValoracionesVista.setOnMouseClicked(event -> {
+            opcionSeleccionada = "VALORACIONES";
+            cambiarVistaMantenimiento("ValoracionesSalas.fxml");
+        });
+    }
+
+    private void cambiarVistaMantenimiento(String vista) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(vista));
             Parent nuevaVista = loader.load();
@@ -275,7 +286,7 @@ private void cambiarVistaMantenimiento(String vista) {
     }
 
     @FXML
-private void btnFiltrarOnAction(ActionEvent event) {
+    private void btnFiltrarOnAction(ActionEvent event) {
         String entidadSeleccionada = obtenerEntidadSeleccionada();
         String textoFiltro = txtFiltroBusqueda.getText().trim().toLowerCase();
         String filtroSeleccionado = cbFiltroElementos.getSelectionModel().getSelectedItem();
@@ -401,7 +412,7 @@ private void btnFiltrarOnAction(ActionEvent event) {
                 // Permitir que el usuario borre manualmente el filtro para recargar todos los datos
                 txtFiltroBusqueda.setOnKeyTyped(new EventHandler<KeyEvent>() {
                     @Override
-public void handle(KeyEvent event) {
+                    public void handle(KeyEvent event) {
                         if (txtFiltroBusqueda.getText().isEmpty()) {
                             tvPrecios.setItems(FXCollections.observableArrayList(preciosJpa.findPreciosEntities()));
                         }
@@ -455,7 +466,7 @@ public void handle(KeyEvent event) {
     }
 
     @FXML
-private void btnEditarOnAction(ActionEvent event) {
+    private void btnEditarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
 
         switch (entidad) {
@@ -622,7 +633,7 @@ private void btnEditarOnAction(ActionEvent event) {
     }
 
     @FXML
-private void btnEliminarOnAction(ActionEvent event) {
+    private void btnEliminarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
 
         switch (entidad) {
@@ -646,10 +657,25 @@ private void btnEliminarOnAction(ActionEvent event) {
                 Salas sala = tvSalas.getSelectionModel().getSelectedItem();
                 if (sala != null) {
                     try {
+                        // Ruta donde se guardan los archivos QR
+                        String rutaCarpetaQR = "C:\\Users\\randa\\OneDrive\\Documents\\NetBeansProjects\\BD_MuseoMAHN_Proyecto2\\QRsSalas";
+                        // Construir la ruta del archivo QR
+                        String rutaQR = rutaCarpetaQR + "\\QR_Sala_" + sala.getIdSala() + ".png";
+                        File archivoQR = new File(rutaQR);
+                        // Si el archivo QR existe, lo eliminamos
+                        if (archivoQR.exists()) {
+                            boolean eliminado = archivoQR.delete();
+                            if (eliminado) {
+                                System.out.println("QR de la sala eliminado correctamente.");
+                            } else {
+                                System.out.println("No se pudo eliminar el QR de la sala.");
+                            }
+                        }
                         salasJpa.delete(sala);
                         cargarDatosSalas();
-                        mostrarAlerta("Sala eliminada.");
+                        mostrarAlerta("Sala eliminada correctamente.");
                         limpiarCampos();
+
                     } catch (Exception e) {
                         mostrarError("Error al eliminar sala: " + e.getMessage());
                     }
@@ -742,7 +768,7 @@ private void btnEliminarOnAction(ActionEvent event) {
     }
 
     @FXML
-private void btnInsertarOnAction(ActionEvent event) {
+    private void btnInsertarOnAction(ActionEvent event) {
         String entidad = cbEntidadesMantenimiento.getSelectionModel().getSelectedItem();
 
         switch (entidad) {
@@ -808,8 +834,26 @@ private void btnInsertarOnAction(ActionEvent event) {
             nuevaSala.setDescripcion(txtAreaDescripcion.getText());
             nuevaSala.setTematica(cbTipoTematicaSalas.getValue());
 
+            // Obtener el museo seleccionado
+            Museos museoSeleccionado = cbElegirMuseoSalas.getSelectionModel().getSelectedItem();
+            if (museoSeleccionado != null) {
+                nuevaSala.setIdMuseo(museoSeleccionado);  // Asociar el museo a la sala
+            } else {
+                mostrarError("Debe seleccionar un museo para asociar con la sala.");
+                return; 
+            }
             try {
+                // Crear la nueva sala en la base de datos
                 salasJpa.create(nuevaSala);
+                // Generar el QR solo si el museo está asociado
+                String rutaCarpeta = "C:\\Users\\randa\\OneDrive\\Documents\\NetBeansProjects\\BD_MuseoMAHN_Proyecto2\\QRsSalas";
+                File carpeta = new File(rutaCarpeta);
+                if (!carpeta.exists()) {
+                    carpeta.mkdirs();
+                }
+                String rutaQR = rutaCarpeta + "\\QR_Sala_" + nuevaSala.getIdSala() + ".png";
+                QRUtils.generarQRCodeSala(nuevaSala.getIdSala(), rutaQR);  // Generar el QR con la id de la sala
+                mostrarAlerta("QR generado y guardado en:\n" + rutaQR);
                 cargarDatosSalas();
                 mostrarAlerta("Sala insertada correctamente.");
                 limpiarCampos();
@@ -986,7 +1030,7 @@ private void btnInsertarOnAction(ActionEvent event) {
     }
 
     @FXML
-private void btnGuardarOnAction(ActionEvent event) {
+    private void btnGuardarOnAction(ActionEvent event) {
         String entidad = getEntidadSeleccionada();
 
         if (modoEdicion) {
@@ -1253,7 +1297,7 @@ private void btnGuardarOnAction(ActionEvent event) {
     }
 
     @FXML
-private void btnCancelarOnAction(ActionEvent event) {
+    private void btnCancelarOnAction(ActionEvent event) {
         limpiarCampos();
     }
 
@@ -1606,7 +1650,7 @@ private void btnCancelarOnAction(ActionEvent event) {
         // Mostrar solo el nombre del museo en el ComboBox
         cbElegirMuseoSalas.setCellFactory(lv -> new ListCell<>() {
             @Override
-protected void updateItem(Museos item, boolean empty) {
+            protected void updateItem(Museos item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1614,7 +1658,7 @@ protected void updateItem(Museos item, boolean empty) {
 
         cbElegirMuseoSalas.setButtonCell(new ListCell<>() {
             @Override
-protected void updateItem(Museos item, boolean empty) {
+            protected void updateItem(Museos item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1643,7 +1687,7 @@ protected void updateItem(Museos item, boolean empty) {
 
         cbElegirSalaColeccion.setCellFactory(lv -> new ListCell<>() {
             @Override
-protected void updateItem(Salas item, boolean empty) {
+            protected void updateItem(Salas item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1651,7 +1695,7 @@ protected void updateItem(Salas item, boolean empty) {
 
         cbElegirSalaColeccion.setButtonCell(new ListCell<>() {
             @Override
-protected void updateItem(Salas item, boolean empty) {
+            protected void updateItem(Salas item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1684,7 +1728,7 @@ protected void updateItem(Salas item, boolean empty) {
         // Configurar cómo se muestra la lista en el ComboBox
         cbElegirColeccionEspecies.setCellFactory(lv -> new ListCell<>() {
             @Override
-protected void updateItem(Colecciones item, boolean empty) {
+            protected void updateItem(Colecciones item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombreColeccion());
             }
@@ -1692,7 +1736,7 @@ protected void updateItem(Colecciones item, boolean empty) {
 
         cbElegirColeccionEspecies.setButtonCell(new ListCell<>() {
             @Override
-protected void updateItem(Colecciones item, boolean empty) {
+            protected void updateItem(Colecciones item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombreColeccion());
             }
@@ -1715,7 +1759,7 @@ protected void updateItem(Colecciones item, boolean empty) {
 
         cbElegirSalaColeccion.setCellFactory(lv -> new ListCell<>() {
             @Override
-protected void updateItem(Salas item, boolean empty) {
+            protected void updateItem(Salas item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1723,7 +1767,7 @@ protected void updateItem(Salas item, boolean empty) {
 
         cbElegirSalaColeccion.setButtonCell(new ListCell<>() {
             @Override
-protected void updateItem(Salas item, boolean empty) {
+            protected void updateItem(Salas item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1743,7 +1787,7 @@ protected void updateItem(Salas item, boolean empty) {
         cbElegirSalaColeccion.setItems(listaSalas);
         cbElegirSalaColeccion.setCellFactory(lv -> new ListCell<>() {
             @Override
-protected void updateItem(Salas item, boolean empty) {
+            protected void updateItem(Salas item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
@@ -1751,20 +1795,20 @@ protected void updateItem(Salas item, boolean empty) {
 
         cbElegirSalaColeccion.setButtonCell(new ListCell<>() {
             @Override
-protected void updateItem(Salas item, boolean empty) {
+            protected void updateItem(Salas item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : item.getNombre());
             }
         });
 
-}
+    }
 
     public enum TipoPrecio {
-    LUNES_SABADO,
-    DOMINGO;
-}
+        LUNES_SABADO,
+        DOMINGO;
+    }
 
-private void actualizarMontoAutomatico() {
+    private void actualizarMontoAutomatico() {
         TipoPrecio tipoSeleccionado = cbPreciosDias.getSelectionModel().getSelectedItem();
 
         if (tipoSeleccionado == TipoPrecio.DOMINGO) {
@@ -1826,7 +1870,7 @@ private void actualizarMontoAutomatico() {
     }
 
     @FXML
-private void btnSalirOnAction(ActionEvent event) {
+    private void btnSalirOnAction(ActionEvent event) {
         System.exit(0);
     }
 }
