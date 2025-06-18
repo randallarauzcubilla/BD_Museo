@@ -1,10 +1,12 @@
 package controladores;
 
 import java.util.Collection;
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 import persistencia.Salas;
 
@@ -81,6 +83,54 @@ public class SalasJpaController {
                 em.remove(porEliminar);
                 em.getTransaction().commit();
             }
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Salas> findSalasByMuseo(int idMuseo) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Salas> query = em.createQuery(
+                    "SELECT s FROM Salas s WHERE s.idMuseo.idMuseo = :idMuseo", Salas.class);
+            query.setParameter("idMuseo", idMuseo);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Salas> obtenerSalasPorMuseo(int idMuseo) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Salas> query = em.createQuery(
+                    "SELECT s FROM Salas s WHERE s.idMuseo.idMuseo = :idMuseo", Salas.class);
+            query.setParameter("idMuseo", idMuseo);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public Salas findSalasByNombre(String nombreSala) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Salas> query = em.createQuery(
+                    "SELECT s FROM Salas s WHERE s.nombre = :nombre", Salas.class);
+            query.setParameter("nombre", nombreSala);
+            return query.getSingleResult();
+        } catch (Exception e) {
+            System.out.println("Sala no encontrada: " + e.getMessage());
+            return null;
+        } finally {
+            em.close();
+        }
+    }
+
+    public Salas findSalasById(int idSala) {
+        EntityManager em = getEntityManager();
+        try {
+            return em.find(Salas.class, idSala);
         } finally {
             em.close();
         }
