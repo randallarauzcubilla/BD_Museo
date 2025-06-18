@@ -1,13 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
 
 <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1000.0" prefWidth="1530.0" style="-fx-background-color: silver;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.bd_museomahn_proyecto2.EntradasMuseoController">
    <children>
       <Pane fx:id="paneVistaEntradaVenta" prefHeight="740.0" prefWidth="1100.0" style="-fx-background-color: blue sky;">
          <children>
-            <Button fx:id="btnVolverMantenimiento" layoutX="177.0" layoutY="610.0" mnemonicParsing="false" onAction="#btnVolverMantenimientoOnAction" prefHeight="45.0" prefWidth="116.0" text="VOLVER" />
+            <Button fx:id="btnVolverMantenimiento" layoutX="29.0" layoutY="608.0" mnemonicParsing="false" onAction="#btnVolverMantenimientoOnAction" prefHeight="45.0" prefWidth="116.0" text="VOLVER" />
+            <Label layoutX="74.0" layoutY="139.0" prefHeight="45.0" prefWidth="219.0" text="NOMBRE VISITANTE:" textFill="#e7e0e0">
+               <font>
+                  <Font name="Arial Black" size="18.0" />
+               </font>
+            </Label>
+            <Label layoutX="80.0" layoutY="212.0" prefHeight="27.0" prefWidth="174.0" text="ENTRADA A:" textFill="#dfdada">
+               <font>
+                  <Font name="Arial Black" size="18.0" />
+               </font>
+            </Label>
+            <Label layoutX="80.0" layoutY="263.0" text="MUSEO:" textFill="#eae6e6">
+               <font>
+                  <Font name="Arial Black" size="17.0" />
+               </font>
+            </Label>
+            <ComboBox fx:id="cbEscogerMuseo" layoutX="167.0" layoutY="264.0" onAction="#onMuseoSeleccionado" prefHeight="25.0" prefWidth="261.0" />
+            <Label layoutX="435.0" layoutY="266.0" text="DÍAS:" textFill="#ece9e9">
+               <font>
+                  <Font name="Arial Black" size="16.0" />
+               </font>
+            </Label>
+            <DatePicker fx:id="dataPickerDiasVisita" layoutX="495.0" layoutY="264.0" />
+            <TextField fx:id="txtNombreVisitante" layoutX="293.0" layoutY="149.0" prefHeight="25.0" prefWidth="403.0" />
+            <Label layoutX="703.0" layoutY="150.0" text="TIPO DE TRAJETA:" textFill="#f2eaea">
+               <font>
+                  <Font name="Arial Black" size="15.0" />
+               </font>
+            </Label>
+            <ComboBox fx:id="cbTipoTarjeta" layoutX="873.0" layoutY="149.0" prefHeight="25.0" prefWidth="182.0" />
+            <Label layoutX="423.0" layoutY="71.0" text="VENDER ENTRADA" textFill="#ececec">
+               <font>
+                  <Font name="Arial Rounded MT Bold" size="27.0" />
+               </font>
+            </Label>
+            <Button fx:id="btnAgregarCompra" layoutX="723.0" layoutY="255.0" mnemonicParsing="false" onAction="#btnAgregarCompraOnAction" prefHeight="45.0" prefWidth="116.0" text="AGREGAR" />
+            <TableView fx:id="tvVerRegistroCompras" layoutX="167.0" layoutY="335.0" prefHeight="212.0" prefWidth="674.0" />
+            <Button fx:id="btnVender" layoutX="906.0" layoutY="608.0" mnemonicParsing="false" onAction="#btnVenderOnAction" prefHeight="45.0" prefWidth="116.0" text="VENDER" />
+            <Label layoutX="550.0" layoutY="600.0" text="TOTAL A PAGAR:" textFill="#f2f0f0">
+               <font>
+                  <Font name="Arial Black" size="12.0" />
+               </font>
+            </Label>
+            <Label fx:id="labelMostrarTotal" layoutX="678.0" layoutY="590.0" prefHeight="38.0" prefWidth="116.0" text="\$" textFill="#e7e0e0" />
+            <Label layoutX="253.0" layoutY="583.0" text="SUBTOTAL:" textFill="#eae4e4" />
+            <Label layoutX="256.0" layoutY="631.0" text="IVA (13%:)" textFill="#ece7e7" />
+            <Label fx:id="labelImpuesto" layoutX="324.0" layoutY="624.0" prefHeight="32.0" prefWidth="135.0" textFill="#ece8e8" />
+            <Label fx:id="labelSubtotal" layoutX="333.0" layoutY="575.0" prefHeight="32.0" prefWidth="135.0" textFill="#ece6e6" />
+            <ComboBox fx:id="cbEscogerSala" layoutX="167.0" layoutY="300.0" prefHeight="25.0" prefWidth="261.0" promptText="SALAS DISPONIBLES" />
          </children></Pane>
    </children>
 </Pane>
