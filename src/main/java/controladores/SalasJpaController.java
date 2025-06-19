@@ -9,6 +9,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 import persistencia.Salas;
+import persistencia.Valoraciones;
 
 public class SalasJpaController {
 
@@ -135,4 +136,17 @@ public class SalasJpaController {
             em.close();
         }
     }
+
+    public List<Valoraciones> findValoracionesBySala(int idSala) {
+        EntityManager em = getEntityManager();
+        try {
+            String query = "SELECT v FROM Valoraciones v WHERE v.idSala.idSala = :idSala";
+            return em.createQuery(query, Valoraciones.class)
+                    .setParameter("idSala", idSala)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
 }
