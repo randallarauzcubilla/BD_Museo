@@ -190,6 +190,8 @@ public class MantenimientoController implements Initializable {
     private Label lbValidarEntrada;
     @FXML
     private Label lbValoracionesVista;
+    @FXML
+    private Label lbVistaReportes;
 
     /**
      * Initializes the controller class.
@@ -252,6 +254,7 @@ public class MantenimientoController implements Initializable {
         lbVenderEntrada.setCursor(Cursor.HAND);
         lbValidarEntrada.setCursor(Cursor.HAND);
         lbValoracionesVista.setCursor(Cursor.HAND);
+        lbVistaReportes.setCursor(Cursor.HAND);
         lbVenderEntrada.setOnMouseClicked(event -> {
             opcionSeleccionada = "Vender Entrada";
             cambiarVistaMantenimiento("EntradasMuseo.fxml");
@@ -265,6 +268,11 @@ public class MantenimientoController implements Initializable {
         lbValoracionesVista.setOnMouseClicked(event -> {
             opcionSeleccionada = "VALORACIONES";
             cambiarVistaMantenimiento("ValoracionesSalas.fxml");
+        });
+
+        lbVistaReportes.setOnMouseClicked(event -> {
+            opcionSeleccionada = "REPORTES";
+            cambiarVistaMantenimiento("VistaReportes.fxml");
         });
     }
 
@@ -290,7 +298,10 @@ public class MantenimientoController implements Initializable {
         String entidadSeleccionada = obtenerEntidadSeleccionada();
         String textoFiltro = txtFiltroBusqueda.getText().trim().toLowerCase();
         String filtroSeleccionado = cbFiltroElementos.getSelectionModel().getSelectedItem();
-
+        if (filtroSeleccionado == null || filtroSeleccionado.isEmpty()) {
+            mostrarError("Por favor selecciona un criterio de filtrado.");
+            return;
+        }
         switch (entidadSeleccionada) {
             case "MUSEOS":
                 List<Museos> listaMuseosFiltrada = museosJpa.findMuseosEntities()
@@ -840,7 +851,7 @@ public class MantenimientoController implements Initializable {
                 nuevaSala.setIdMuseo(museoSeleccionado);  // Asociar el museo a la sala
             } else {
                 mostrarError("Debe seleccionar un museo para asociar con la sala.");
-                return; 
+                return;
             }
             try {
                 // Crear la nueva sala en la base de datos
