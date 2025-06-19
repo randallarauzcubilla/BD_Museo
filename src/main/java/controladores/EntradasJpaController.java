@@ -1,9 +1,11 @@
 package controladores;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.*;
 import persistencia.Entradas;
+import persistencia.RegistroComisiones;
 
 public class EntradasJpaController {
 
@@ -58,10 +60,10 @@ public class EntradasJpaController {
         try {
             return em.createQuery("SELECT e FROM Entradas e WHERE e.codigoQR = :codigoQR", Entradas.class)
                     .setParameter("codigoQR", codigoQR)
-                    .getResultList(); 
+                    .getResultList();
         } catch (Exception e) {
             System.out.println("Error al buscar entradas por QR: " + e.getMessage());
-            return Collections.emptyList(); 
+            return Collections.emptyList();
         } finally {
             em.close();
         }
