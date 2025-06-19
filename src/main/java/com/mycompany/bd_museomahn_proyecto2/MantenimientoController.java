@@ -1834,7 +1834,7 @@ public class MantenimientoController implements Initializable {
         txtCampo1.setVisible(true); // Comisión
         txtCampo1.setPromptText("Porcentaje comisión %");
         cbTipoTarjeta.setPromptText("Tipo de tarjeta");
-        cbTipoTarjeta.setItems(FXCollections.observableArrayList("VISA", "Mastercard", "American Express", "Diners Club", "Union Pay"));
+        cbTipoTarjeta.setItems(FXCollections.observableArrayList("VISA", "Mastercard", "American Express", "Dinner Club", "Union Pay"));
     }
 
 // ---------------- Ocultar todo por defecto ----------------
