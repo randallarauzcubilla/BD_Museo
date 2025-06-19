@@ -66,4 +66,18 @@ public class ValoracionesJpaController {
             em.close();  // Cerrar el EntityManager después de usarlo
         }
     }
+
+    public List<Object[]> obtenerSalasOrdenadasPorValoracion(boolean asc) {
+        EntityManager em = getEntityManager();
+        try {
+            String orden = asc ? "ASC" : "DESC";
+            String jpql = "SELECT v.idSala.nombre, AVG(v.estrellas) "
+                    + "FROM Valoraciones v GROUP BY v.idSala.nombre ORDER BY AVG(v.estrellas) " + orden;
+            return em.createQuery(jpql, Object[].class)
+                    .setMaxResults(10)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+    }
 }
