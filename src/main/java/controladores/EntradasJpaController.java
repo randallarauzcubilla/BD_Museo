@@ -1,11 +1,9 @@
 package controladores;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import javax.persistence.*;
 import persistencia.Entradas;
-import persistencia.RegistroComisiones;
 
 public class EntradasJpaController {
 
