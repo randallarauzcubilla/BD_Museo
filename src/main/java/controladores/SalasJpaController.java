@@ -1,5 +1,6 @@
 package controladores;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -33,6 +34,10 @@ public class SalasJpaController {
         } finally {
             em.close();
         }
+    }
+
+    public void create(Salas sala, EntityManager em) {
+        em.persist(sala);
     }
 
     // Consultar todas las salas
@@ -149,4 +154,17 @@ public class SalasJpaController {
         }
     }
 
+    public Salas findSalaConPrecios(int idSala) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Salas> query = em.createQuery(
+                    "SELECT s FROM Salas s LEFT JOIN FETCH s.preciosCollection WHERE s.idSala = :idSala",
+                    Salas.class
+            );
+            query.setParameter("idSala", idSala);
+            return query.getSingleResult();
+        } finally {
+            em.close();
+        }
+    }
 }

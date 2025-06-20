@@ -4,6 +4,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
 import persistencia.Precios;
 
 /**
@@ -33,6 +34,10 @@ public class PreciosJpaController {
         } finally {
             em.close();
         }
+    }
+
+    public void create(Precios precio, EntityManager em) {
+        em.persist(precio);
     }
 
     // Editar un precio existente
@@ -79,6 +84,30 @@ public class PreciosJpaController {
         EntityManager em = getEntityManager();
         try {
             return em.find(Precios.class, idPrecio);
+        } finally {
+            em.close();
+        }
+    }
+
+    public Precios findPrecioPorSalaYDia(int idSala, boolean esDomingo) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Precios> query;
+            if (esDomingo) {
+                query = em.createQuery(
+                        "SELECT p FROM Precios p WHERE p.idSala.idSala = :idSala AND p.precioDomingo > 0",
+                        Precios.class
+                );
+            } else {
+                query = em.createQuery(
+                        "SELECT p FROM Precios p WHERE p.idSala.idSala = :idSala AND p.precioLunesSabado > 0",
+                        Precios.class
+                );
+            }
+            query.setParameter("idSala", idSala);
+            return query.setMaxResults(1).getSingleResult();
+        } catch (Exception e) {
+            return null;
         } finally {
             em.close();
         }
