@@ -2,11 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package persistencia;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import javax.persistence.CascadeType;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 
 /**
  *
@@ -48,12 +51,15 @@ public class Salas implements Serializable {
     private Museos idMuseo;
     @javax.persistence.OneToMany(mappedBy = "idSala")
     private Collection<ImagenesSalas> imagenesSalasCollection;
-    @javax.persistence.OneToMany(mappedBy = "idSala")
-    private Collection<Precios> preciosCollection;
+//    @javax.persistence.OneToMany(mappedBy = "idSala")
+//    private Collection<Precios> preciosCollection;
     @javax.persistence.OneToMany(mappedBy = "idSala")
     private Collection<Valoraciones> valoracionesCollection;
+    @OneToMany(mappedBy = "idSala", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Collection<Precios> preciosCollection;
 
     public Salas() {
+        this.preciosCollection = new ArrayList<>();
     }
 
     public Salas(Integer idSala) {
