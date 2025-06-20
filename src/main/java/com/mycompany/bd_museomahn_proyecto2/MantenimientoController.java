@@ -51,8 +51,12 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.stage.FileChooser;
 import persistencia.Colecciones;
 import persistencia.Comisionestarjetas;
 import persistencia.Especies;
@@ -119,8 +123,6 @@ public class MantenimientoController implements Initializable {
     @FXML
     private TitledPane titledPaneReportes;
     @FXML
-    private TextField txtNumeroDeSala;
-    @FXML
     private ComboBox<String> cbEntidadesMantenimiento;
     @FXML
     private TabPane tvVerElementosClases;
@@ -140,7 +142,7 @@ public class MantenimientoController implements Initializable {
     private TableView<Comisionestarjetas> tvComisionesTarjeta;
     private boolean modoEdicion = false;
     private Museos museoSeleccionado = null;
-
+    private String rutaImagenSeleccionada;
     //INSTANCIAS GLOBALES
     private final MuseosJpaController museosJpa = new MuseosJpaController();
     private final SalasJpaController salasJpa = new SalasJpaController();
@@ -149,7 +151,7 @@ public class MantenimientoController implements Initializable {
     private final TematicasJpaController tematicasJpa = new TematicasJpaController();
     private final PreciosJpaController preciosJpa = new PreciosJpaController();
     private final ComisionestarjetasJpaController comisionesJpa = new ComisionestarjetasJpaController();
-    private final ImagenesSalasJpaController imagenDAO = new ImagenesSalasJpaController();
+    private final ImagenesSalasJpaController imagenesJpa = new ImagenesSalasJpaController();
 
     @FXML
     private ComboBox<String> cbTipoMuseo;
@@ -192,6 +194,18 @@ public class MantenimientoController implements Initializable {
     private Label lbValoracionesVista;
     @FXML
     private Label lbVistaReportes;
+    @FXML
+    private Button btnCargarImagDinamica;
+    @FXML
+    private Button btnGuardarImgDinamica;
+    @FXML
+    private StackPane stackPaneImagDinamica;
+    @FXML
+    private ImageView imagenEspecieTematica;
+    @FXML
+    private ComboBox<String> cbTipoEspecieTematica;
+    @FXML
+    private ImageView LOGOUNA;
 
     /**
      * Initializes the controller class.
@@ -1536,6 +1550,10 @@ public class MantenimientoController implements Initializable {
         cbElegirColeccionEspecies.getSelectionModel().clearSelection();
         modoEdicion = false;
         museoSeleccionado = null;
+        imagenEspecieTematica.setImage(null);
+        rutaImagenSeleccionada = null;
+        cbTipoEspecieTematica.getSelectionModel().clearSelection();
+        imagenEspecieTematica.setImage(null);
     }
 
     private void actualizarCamposPorEntidad(String entidad) {
@@ -1692,7 +1710,12 @@ public class MantenimientoController implements Initializable {
         txtAreaDescripcion.setPromptText("Descripción");
         datePickerSelectAuxiliar.setPromptText("Siglo");
         cbElegirSalaColeccion.setPromptText("Seleccionar Sala");
-
+        cbTipoEspecieTematica.setPromptText("Especie/Temática");
+        btnCargarImagDinamica.setVisible(true);
+        btnGuardarImgDinamica.setVisible(true);
+        stackPaneImagDinamica.setVisible(true);
+        imagenEspecieTematica.setVisible(true);
+        cbTipoEspecieTematica.setVisible(true);
         ObservableList<Salas> listaSalas = FXCollections.observableArrayList(salasJpa.findSalasEntities());
         cbElegirSalaColeccion.setItems(listaSalas);
 
@@ -1711,6 +1734,8 @@ public class MantenimientoController implements Initializable {
                 setText(empty || item == null ? null : item.getNombre());
             }
         });
+        cbTipoEspecieTematica.setItems(FXCollections.observableArrayList("Tematica", "Especie"));
+        cbTipoEspecieTematica.setPromptText("Tipo de imagen");
     }
 
     private void mostrarCamposEspecies() {
@@ -1759,12 +1784,15 @@ public class MantenimientoController implements Initializable {
         txtCampo3.setVisible(true); // Época de temática
         txtAreaDescripcion.setVisible(true); // Descripción
         cbElegirSalaColeccion.setVisible(true); // Sala asociada a la temática
-
+        btnCargarImagDinamica.setVisible(true);
+        btnGuardarImgDinamica.setVisible(true);
+        stackPaneImagDinamica.setVisible(true);
+        imagenEspecieTematica.setVisible(true);
+        cbTipoEspecieTematica.setVisible(true);
         txtCampo1.setPromptText("Nombre temática");
         txtCampo3.setPromptText("Época de temática");
         txtAreaDescripcion.setPromptText("Descripción");
         cbElegirSalaColeccion.setPromptText("Tipo de Sala");
-
         ObservableList<Salas> listaSalas = FXCollections.observableArrayList(salasJpa.findSalasEntities());
         cbElegirSalaColeccion.setItems(listaSalas);
 
@@ -1783,6 +1811,8 @@ public class MantenimientoController implements Initializable {
                 setText(empty || item == null ? null : item.getNombre());
             }
         });
+        cbTipoEspecieTematica.setItems(FXCollections.observableArrayList("Tematica", "Especie"));
+        cbTipoEspecieTematica.setPromptText("Tipo de imagen");
     }
 
     private void mostrarCamposPrecios() {
@@ -1812,6 +1842,69 @@ public class MantenimientoController implements Initializable {
             }
         });
 
+    }
+
+    @FXML
+    private void btnCargarImagDinamicaOnAction(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar imagen");
+
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Imágenes", "*.jpg", "*.jpeg", "*.png")
+        );
+
+        File archivo = fileChooser.showOpenDialog(btnCargarImagDinamica.getScene().getWindow());
+
+        if (archivo != null) {
+            rutaImagenSeleccionada = archivo.getAbsolutePath(); // guardás la ruta para persistir luego
+            Image img = new Image(archivo.toURI().toString());
+            imagenEspecieTematica.setImage(img);
+            mostrarAlerta("Imagen cargada correctamente.");
+        } else {
+            mostrarError("No se seleccionó ninguna imagen.");
+        }
+    }
+
+    @FXML
+    private void btnGuardarImgDinamicaOnAction(ActionEvent event) {
+        Salas salaSeleccionada = cbElegirSalaColeccion.getSelectionModel().getSelectedItem();
+        // Obtener el tipo seleccionado (Tematica o Especie)
+        String tipoSeleccionado = cbTipoEspecieTematica.getValue();
+
+        if (salaSeleccionada == null || tipoSeleccionado == null || rutaImagenSeleccionada == null) {
+            mostrarError("Debes seleccionar una sala, un tipo de imagen y haber cargado una imagen.");
+            return;
+        }
+
+        String vistaActual = getEntidadSeleccionada(); // Puede devolver "TEMÁTICAS" o "COLECCIONES"
+
+        if ("Tematica".equals(tipoSeleccionado) && "COLECCIONES".equalsIgnoreCase(vistaActual)) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Advertencia", null,
+                    "Estás en la vista de COLECCIONES pero seleccionaste 'Tematica' como tipo de imagen.");
+            return;
+        }
+
+        if ("Especie".equals(tipoSeleccionado) && "TEMÁTICAS".equalsIgnoreCase(vistaActual)) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Advertencia", null,
+                    "Estás en la vista de TEMÁTICAS pero seleccionaste 'Especie' como tipo de imagen.");
+            return;
+        }
+
+        try {
+            imagenesJpa.agregarImagenASala(
+                    salaSeleccionada.getIdSala(), // ID de la sala desde el ComboBox
+                    rutaImagenSeleccionada, // Ruta del archivo cargado
+                    null, // Descripción, puede ser null
+                    tipoSeleccionado // Tipo desde el ComboBox (ENUM)
+            );
+            mostrarAlerta("Imagen guardada correctamente en la base de datos.");
+            imagenEspecieTematica.setImage(null); // Limpieza visual
+            rutaImagenSeleccionada = null;
+            cbTipoEspecieTematica.getSelectionModel().clearSelection();
+
+        } catch (Exception e) {
+            mostrarError("Error al guardar la imagen: " + e.getMessage());
+        }
     }
 
     public enum TipoPrecio {
@@ -1857,6 +1950,11 @@ public class MantenimientoController implements Initializable {
         cbElegirMuseoSalas.setVisible(false);
         txtAreaDescripcion.setVisible(false);
         limpiarPrompts();
+        btnCargarImagDinamica.setVisible(false);
+        btnGuardarImgDinamica.setVisible(false);
+        stackPaneImagDinamica.setVisible(false);
+        imagenEspecieTematica.setVisible(false);
+        cbTipoEspecieTematica.setVisible(false);
     }
 
 // ---------------- Limpiar prompts ----------------
@@ -1878,6 +1976,15 @@ public class MantenimientoController implements Initializable {
         cbElegirMuseoSalas.setPromptText("");
         cbElegirColeccionEspecies.setPromptText("");
         cbPreciosDias.setPromptText("");
+        cbTipoEspecieTematica.setPromptText("");
+    }
+
+    private void mostrarAlerta(Alert.AlertType tipo, String titulo, String encabezado, String contenido) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(encabezado);
+        alerta.setContentText(contenido);
+        alerta.showAndWait();
     }
 
     @FXML
