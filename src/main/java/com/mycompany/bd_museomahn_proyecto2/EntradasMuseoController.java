@@ -8,6 +8,7 @@ import controladores.ComisionestarjetasJpaController;
 import controladores.EntradaSalasJpaController;
 import controladores.EntradasJpaController;
 import controladores.MuseosJpaController;
+import controladores.PreciosJpaController;
 import controladores.RegistroComisionesJpaController;
 import controladores.SalasJpaController;
 import java.io.IOException;
@@ -46,6 +47,7 @@ import persistencia.Comisionestarjetas;
 import persistencia.EntradaSalas;
 import persistencia.Entradas;
 import persistencia.Museos;
+import persistencia.Precios;
 import persistencia.RegistroComisiones;
 import persistencia.Salas;
 
@@ -60,7 +62,7 @@ public class EntradasMuseoController implements Initializable {
     private final EntradaSalasJpaController entradaSalasDAO = new EntradaSalasJpaController();
     private final RegistroComisionesJpaController registroComisionesDAO = new RegistroComisionesJpaController();
     private final SalasJpaController salasDAO = new SalasJpaController();
-
+    private final PreciosJpaController preciosJpa = new PreciosJpaController();
     @FXML
     private Pane paneVistaEntradaVenta;
     @FXML
@@ -140,6 +142,9 @@ public class EntradasMuseoController implements Initializable {
     private void btnAgregarCompraOnAction(ActionEvent event) {
         Museos museo = cbEscogerMuseo.getValue();
         Salas sala = cbEscogerSala.getValue();
+        SalasJpaController salaDAO = new SalasJpaController();
+        sala = salaDAO.findSalaConPrecios(sala.getIdSala());
+
         LocalDate fecha = dataPickerDiasVisita.getValue();
         Comisionestarjetas tarjeta = cbTipoTarjeta.getValue();
 
@@ -160,22 +165,14 @@ public class EntradasMuseoController implements Initializable {
             alerta.setHeaderText("Fecha de visita incorrecta");
             alerta.setContentText("La fecha seleccionada no puede ser anterior a hoy.");
             alerta.showAndWait();
-            return; 
+            return;
         }
 
         boolean esDomingo = fecha.getDayOfWeek() == DayOfWeek.SUNDAY;
-
-        BigDecimal precioBase = sala.getPreciosCollection().stream()
-                .filter(p -> {
-                    if (esDomingo) {
-                        return p.getPrecioDomingo().compareTo(BigDecimal.ZERO) > 0;
-                    } else {
-                        return p.getPrecioLunesSabado().compareTo(BigDecimal.ZERO) > 0;
-                    }
-                })
-                .map(p -> esDomingo ? p.getPrecioDomingo() : p.getPrecioLunesSabado())
-                .findFirst()
-                .orElse(BigDecimal.ZERO);
+        Precios precio = preciosJpa.findPrecioPorSalaYDia(sala.getIdSala(), esDomingo);
+        BigDecimal precioBase = (precio != null)
+                ? (esDomingo ? precio.getPrecioDomingo() : precio.getPrecioLunesSabado())
+                : BigDecimal.ZERO;
 
         BigDecimal comision = precioBase.multiply(tarjeta.getPorcentajeComision()).divide(new BigDecimal("100"));
         BigDecimal precioFinal = precioBase.add(comision).setScale(2, RoundingMode.HALF_UP);
@@ -222,7 +219,7 @@ public class EntradasMuseoController implements Initializable {
         BigDecimal subtotal = BigDecimal.ZERO;
         String codigoQRVenta = "QR_Venta_" + UUID.randomUUID().toString();
 
-        SalasJpaController salasDAO = new SalasJpaController(); 
+        SalasJpaController salasDAO = new SalasJpaController();
         textoQR.append("QR ID: ").append(codigoQRVenta).append("\n\n");
         for (EntradaVisual entrada : lista) {
             textoQR.append("Museo: ").append(entrada.getMuseo())
