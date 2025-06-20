@@ -449,7 +449,7 @@ public class ValoracionesSalasController implements Initializable {
         btnEstrella5.setStyle("-fx-background-color: " + (5 <= estrellas ? "gold" : "gray"));
 
         // Mostrar el promedio numérico
-        lbPromedioEstrellas.setText(String.format("%.1f", promedio));  // Muestra el promedio con una decimales
+        lbPromedioEstrellas.setText(String.format("%.1f", promedio));  // Muestra el promedio con decimales
     }
 
     private void cargarDatosSalaEnVista(Salas sala) {
