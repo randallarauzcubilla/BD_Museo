@@ -73,4 +73,19 @@ public class ImagenesSalasJpaController {
             em.close();
         }
     }
+
+    public List<ImagenesSalas> findBySalaAndTipo(int idSala, String tipo) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<ImagenesSalas> query = em.createQuery(
+                    "SELECT i FROM ImagenesSalas i WHERE i.idSala.idSala = :idSala AND i.tipo = :tipo",
+                    ImagenesSalas.class
+            );
+            query.setParameter("idSala", idSala);
+            query.setParameter("tipo", tipo);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
 }

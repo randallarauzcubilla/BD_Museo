@@ -11,8 +11,11 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
 <Pane fx:id="ventanaPrincipal" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1000.0" prefWidth="1530.0" style="-fx-background-color: silver;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.bd_museomahn_proyecto2.MantenimientoController">
@@ -37,11 +40,11 @@
                   <Font name="Arial Black" size="48.0" />
                </font>
             </Label>
-            <Button fx:id="btnEditar" layoutX="707.0" layoutY="449.0" mnemonicParsing="false" onAction="#btnEditarOnAction" prefHeight="42.0" prefWidth="127.0" text="EDITAR" />
-            <Button fx:id="btnEliminar" layoutX="610.0" layoutY="506.0" mnemonicParsing="false" onAction="#btnEliminarOnAction" prefHeight="42.0" prefWidth="150.0" text="ELIMINAR" />
-            <Button fx:id="btnInsertar" layoutX="536.0" layoutY="448.0" mnemonicParsing="false" onAction="#btnInsertarOnAction" prefHeight="42.0" prefWidth="149.0" text="NUEVO" />
-            <Button fx:id="btnGuardar" layoutX="865.0" layoutY="448.0" mnemonicParsing="false" onAction="#btnGuardarOnAction" prefHeight="42.0" prefWidth="149.0" text="GUARDAR" />
-            <Button fx:id="btnCancelar" layoutX="782.0" layoutY="504.0" mnemonicParsing="false" onAction="#btnCancelarOnAction" prefHeight="46.0" prefWidth="142.0" text="CANCELAR" />
+            <Button fx:id="btnEditar" layoutX="621.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnEditarOnAction" prefHeight="42.0" prefWidth="108.0" text="EDITAR" />
+            <Button fx:id="btnEliminar" layoutX="729.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnEliminarOnAction" prefHeight="42.0" prefWidth="108.0" text="ELIMINAR" />
+            <Button fx:id="btnInsertar" layoutX="513.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnInsertarOnAction" prefHeight="42.0" prefWidth="108.0" text="NUEVO" />
+            <Button fx:id="btnGuardar" layoutX="945.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnGuardarOnAction" prefHeight="42.0" prefWidth="108.0" text="GUARDAR" />
+            <Button fx:id="btnCancelar" layoutX="837.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnCancelarOnAction" prefHeight="42.0" prefWidth="108.0" text="CANCELAR" />
             <DatePicker fx:id="datePickerSelect" layoutX="326.0" layoutY="560.0" prefHeight="36.0" prefWidth="175.0" />
             <TextField fx:id="txtCampo3" layoutX="99.0" layoutY="506.0" prefHeight="36.0" prefWidth="204.0" />
             <TextField fx:id="txtCampo5" layoutX="93.0" layoutY="560.0" prefHeight="36.0" prefWidth="224.0" />
@@ -53,7 +56,7 @@
             <DatePicker fx:id="datePickerSelectAuxiliar" layoutX="109.0" layoutY="562.0" prefHeight="36.0" prefWidth="184.0" />
             <ComboBox fx:id="cbTipoTarjeta" layoutX="340.0" layoutY="457.0" prefWidth="150.0" />
             <TextArea fx:id="txtAreaDescripcion" layoutX="99.0" layoutY="620.0" prefHeight="71.0" prefWidth="408.0" />
-            <TabPane fx:id="tvVerElementosClases" layoutX="77.0" layoutY="155.0" prefHeight="258.0" prefWidth="959.0" tabClosingPolicy="UNAVAILABLE">
+            <TabPane fx:id="tvVerElementosClases" layoutX="77.0" layoutY="155.0" prefHeight="258.0" prefWidth="973.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
                 <Tab fx:id="tapMuseos" text="MUSEOS">
                      <content>
@@ -93,12 +96,23 @@
               </tabs>
             </TabPane>
             <ComboBox fx:id="cbTipoMuseo" layoutX="339.0" layoutY="460.0" prefWidth="150.0" />
-            <Button fx:id="btnSalir" layoutX="729.0" layoutY="562.0" mnemonicParsing="false" onAction="#btnSalirOnAction" prefHeight="36.0" prefWidth="82.0" text="SALIR" />
+            <Button fx:id="btnSalir" layoutX="914.0" layoutY="100.0" mnemonicParsing="false" onAction="#btnSalirOnAction" prefHeight="46.0" prefWidth="114.0" style="-fx-background-color: red;" text="SALIR" textFill="#fafafa">
+               <font>
+                  <Font size="19.0" />
+               </font></Button>
             <ComboBox fx:id="cbTipoTematicaSalas" layoutX="126.0" layoutY="512.0" prefWidth="150.0" />
             <ComboBox fx:id="cbElegirMuseoSalas" layoutX="340.0" layoutY="460.0" prefWidth="150.0" />
             <ComboBox fx:id="cbElegirSalaColeccion" layoutX="340.0" layoutY="460.0" prefWidth="150.0" />
             <ComboBox fx:id="cbElegirColeccionEspecies" layoutX="132.0" layoutY="423.0" prefHeight="25.0" prefWidth="343.0" />
             <ComboBox fx:id="cbPreciosDias" layoutX="130.0" layoutY="460.0" prefWidth="150.0" />
+            <Button fx:id="btnCargarImagDinamica" layoutX="708.0" layoutY="692.0" mnemonicParsing="false" onAction="#btnCargarImagDinamicaOnAction" text="INSERTAR IMAGEN" />
+            <Button fx:id="btnGuardarImgDinamica" layoutX="830.0" layoutY="692.0" mnemonicParsing="false" onAction="#btnGuardarImgDinamicaOnAction" text="GUARDAR" />
+            <StackPane fx:id="stackPaneImagDinamica" layoutX="695.0" layoutY="508.0" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: silver;">
+               <children>
+                  <ImageView fx:id="imagenEspecieTematica" fitHeight="180.0" fitWidth="226.0" pickOnBounds="true" preserveRatio="true" />
+               </children>
+            </StackPane>
+            <ComboBox fx:id="cbTipoEspecieTematica" layoutX="697.0" layoutY="479.0" prefHeight="25.0" prefWidth="226.0" />
          </children>
       </Pane>
       <Pane fx:id="paneOpcionesVista" layoutX="45.0" layoutY="76.0" prefHeight="741.0" prefWidth="343.0" style="-fx-background-color: cyan sky;">
@@ -173,7 +187,11 @@
                   <Font name="Arial Black" size="28.0" />
                </font>
             </Label>
-            <TextField fx:id="txtNumeroDeSala" layoutX="47.0" layoutY="14.0" prefHeight="193.0" prefWidth="250.0" />
+            <ImageView fx:id="LOGOUNA" fitHeight="180.0" fitWidth="224.0" layoutX="60.0" layoutY="36.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../../Imagenes/LOGOUNA.png" />
+               </image>
+            </ImageView>
          </children>
       </Pane>
    </children>
