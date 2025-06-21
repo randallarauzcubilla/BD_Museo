@@ -22,7 +22,7 @@
    <children>
       <Pane fx:id="paneVistaMantenimiento" layoutX="388.0" layoutY="76.0" prefHeight="740.0" prefWidth="1100.0" style="-fx-background-color: blue sky;">
          <children>
-            <Button fx:id="btnFiltrar" layoutX="751.0" layoutY="102.0" mnemonicParsing="false" onAction="#btnFiltrarOnAction" prefHeight="42.0" prefWidth="114.0" text="FILTRAR" />
+            <Button fx:id="btnFiltrar" layoutX="751.0" layoutY="102.0" mnemonicParsing="false" onAction="#btnFiltrarOnAction" prefHeight="42.0" prefWidth="114.0" style="-fx-background-color: yellow sky;" text="FILTRAR" />
             <ComboBox fx:id="cbFiltroElementos" layoutX="513.0" layoutY="105.0" prefHeight="36.0" prefWidth="195.0" />
             <TextField fx:id="txtFiltroBusqueda" layoutX="192.0" layoutY="105.0" prefHeight="36.0" prefWidth="195.0" />
             <Label layoutX="99.0" layoutY="111.0" text="FILTRO 1:">
@@ -40,11 +40,11 @@
                   <Font name="Arial Black" size="48.0" />
                </font>
             </Label>
-            <Button fx:id="btnEditar" layoutX="621.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnEditarOnAction" prefHeight="42.0" prefWidth="108.0" text="EDITAR" />
-            <Button fx:id="btnEliminar" layoutX="729.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnEliminarOnAction" prefHeight="42.0" prefWidth="108.0" text="ELIMINAR" />
-            <Button fx:id="btnInsertar" layoutX="513.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnInsertarOnAction" prefHeight="42.0" prefWidth="108.0" text="NUEVO" />
-            <Button fx:id="btnGuardar" layoutX="945.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnGuardarOnAction" prefHeight="42.0" prefWidth="108.0" text="GUARDAR" />
-            <Button fx:id="btnCancelar" layoutX="837.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnCancelarOnAction" prefHeight="42.0" prefWidth="108.0" text="CANCELAR" />
+            <Button fx:id="btnEditar" layoutX="621.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnEditarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: gray;" text="EDITAR" />
+            <Button fx:id="btnEliminar" layoutX="729.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnEliminarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: red;" text="ELIMINAR" />
+            <Button fx:id="btnInsertar" layoutX="513.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnInsertarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: white;" text="NUEVO" />
+            <Button fx:id="btnGuardar" layoutX="945.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnGuardarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: green sky;" text="GUARDAR" />
+            <Button fx:id="btnCancelar" layoutX="837.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnCancelarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: orange;" text="CANCELAR" />
             <DatePicker fx:id="datePickerSelect" layoutX="326.0" layoutY="560.0" prefHeight="36.0" prefWidth="175.0" />
             <TextField fx:id="txtCampo3" layoutX="99.0" layoutY="506.0" prefHeight="36.0" prefWidth="204.0" />
             <TextField fx:id="txtCampo5" layoutX="93.0" layoutY="560.0" prefHeight="36.0" prefWidth="224.0" />
@@ -105,8 +105,8 @@
             <ComboBox fx:id="cbElegirSalaColeccion" layoutX="340.0" layoutY="460.0" prefWidth="150.0" />
             <ComboBox fx:id="cbElegirColeccionEspecies" layoutX="132.0" layoutY="423.0" prefHeight="25.0" prefWidth="343.0" />
             <ComboBox fx:id="cbPreciosDias" layoutX="130.0" layoutY="460.0" prefWidth="150.0" />
-            <Button fx:id="btnCargarImagDinamica" layoutX="708.0" layoutY="692.0" mnemonicParsing="false" onAction="#btnCargarImagDinamicaOnAction" text="INSERTAR IMAGEN" />
-            <Button fx:id="btnGuardarImgDinamica" layoutX="830.0" layoutY="692.0" mnemonicParsing="false" onAction="#btnGuardarImgDinamicaOnAction" text="GUARDAR" />
+            <Button fx:id="btnCargarImagDinamica" layoutX="708.0" layoutY="692.0" mnemonicParsing="false" onAction="#btnCargarImagDinamicaOnAction" style="-fx-background-color: white;" text="INSERTAR IMAGEN" />
+            <Button fx:id="btnGuardarImgDinamica" layoutX="830.0" layoutY="692.0" mnemonicParsing="false" onAction="#btnGuardarImgDinamicaOnAction" style="-fx-background-color: green;" text="GUARDAR" />
             <StackPane fx:id="stackPaneImagDinamica" layoutX="695.0" layoutY="508.0" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: silver;">
                <children>
                   <ImageView fx:id="imagenEspecieTematica" fitHeight="180.0" fitWidth="226.0" pickOnBounds="true" preserveRatio="true" />
@@ -182,11 +182,6 @@
                   </TitledPane>
               </panes>
             </Accordion>
-            <Label layoutX="130.0" layoutY="216.0" text="SALA">
-               <font>
-                  <Font name="Arial Black" size="28.0" />
-               </font>
-            </Label>
             <ImageView fx:id="LOGOUNA" fitHeight="180.0" fitWidth="224.0" layoutX="60.0" layoutY="36.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@../../../Imagenes/LOGOUNA.png" />
