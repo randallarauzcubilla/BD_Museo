@@ -295,7 +295,7 @@ public class EntradasMuseoController implements Initializable {
             SalasJpaController salaDAO = new SalasJpaController();
             List<Salas> salas = salaDAO.obtenerSalasPorMuseo(museoSeleccionado.getIdMuseo());
             for (Salas s : salas) {
-                System.out.println("→ Sala: " + s.getNombre());
+                System.out.println("Sala: " + s.getNombre());
             }
             cbEscogerSala.setItems(FXCollections.observableArrayList(salas));
 
@@ -343,9 +343,8 @@ public class EntradasMuseoController implements Initializable {
                 ancho,
                 alto
         );
-        java.nio.file.Path rutaSalida = Paths.get("C:\\Users\\randa\\OneDrive\\Escritorio", nombreArchivo + "." + formato);
+        java.nio.file.Path rutaSalida = Paths.get("C:\\Users\\randa\\OneDrive\\Documents\\NetBeansProjects\\BD_MuseoMAHN_Proyecto2\\QRsVentas", nombreArchivo + "." + formato);
         MatrixToImageWriter.writeToPath(matriz, formato, (java.nio.file.Path) rutaSalida);
-
         System.out.println("QR guardado en: " + rutaSalida);
     }
 
