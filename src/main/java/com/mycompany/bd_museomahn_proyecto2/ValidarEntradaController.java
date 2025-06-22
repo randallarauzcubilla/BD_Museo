@@ -33,6 +33,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.image.Image;
@@ -62,6 +63,10 @@ public class ValidarEntradaController implements Initializable {
     private Button btnValidarQR;
     @FXML
     private Button btnCargarImagen;
+    @FXML
+    private Label lbMensajeUsuario;
+    @FXML
+    private Label lbConfirmaciónSalas;
 
     /**
      * Initializes the controller class.
@@ -72,6 +77,9 @@ public class ValidarEntradaController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         configurarTablaSalasDeIngreso();
+        lbConfirmaciónSalas.setVisible(false);
+        lbMensajeUsuario.setVisible(false);
+        tvVerSalasDeIngreso.setVisible(false);
     }
 
     @FXML
@@ -164,6 +172,9 @@ public class ValidarEntradaController implements Initializable {
         alerta.setHeaderText("¡Acceso permitido!");
         alerta.setContentText("Puedes ingresar a las siguientes salas:\n" + String.join(", ", salasDisponibles));
         alerta.showAndWait();
+        lbConfirmaciónSalas.setVisible(true);
+        lbMensajeUsuario.setVisible(true);
+        tvVerSalasDeIngreso.setVisible(true);
         List<Integer> idsSalas = entradasValidas.stream()
                 .flatMap(e -> entradaSalasDAO.findByIdEntrada(e).stream())
                 .map(es -> es.getIdSala().getIdSala())
