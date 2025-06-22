@@ -17,6 +17,7 @@ import controladores.ValoracionesJpaController;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import javafx.scene.control.Alert;
 
 public class VistaReportesController {
 
@@ -58,9 +59,10 @@ public class VistaReportesController {
             //  Generar PDF con LocalDate
             CrearPDF crearPDF = new CrearPDF();
             crearPDF.generarReporteComisionesPDF(comisiones, "reporte_comisiones.pdf", localFechaInicio, localFechaFin);
-
+            mostrarAlertaExito("El reporte de comisiones se generó exitosamente.");
         } else {
             System.out.println("Por favor, seleccione ambas fechas de inicio y fin.");
+             mostrarAlertaExito("Por favor, seleccione ambas fechas de inicio y fin.");
         }
     }
 
@@ -82,12 +84,14 @@ public class VistaReportesController {
         List<Object[]> topSalas = valoracionesDAO.obtenerSalasOrdenadasPorValoracion(false);
         CrearPDF crearPDF = new CrearPDF();
         crearPDF.generarReporteSalasValoradasPDF(topSalas, "reporte_mejores_salas.pdf", "Top 10 Salas Mejor Valoradas");
+        mostrarAlertaExito("El reporte de las salas mejor valoradas se generó exitosamente.");
     }
 
     private void generarReportePeoresSalas(ActionEvent event) throws IOException, DocumentException {
         List<Object[]> peoresSalas = valoracionesDAO.obtenerSalasOrdenadasPorValoracion(true);
         CrearPDF crearPDF = new CrearPDF();
         crearPDF.generarReporteSalasValoradasPDF(peoresSalas, "reporte_peores_salas.pdf", "Top 10 Salas Peor Valoradas");
+        mostrarAlertaExito("El reporte de las salas peor valoradas se generó exitosamente.");
     }
 
     @FXML
@@ -98,5 +102,13 @@ public class VistaReportesController {
     @FXML
     private void btnSalasPeorValoradasOnAction(ActionEvent event) throws IOException, DocumentException {
         generarReportePeoresSalas(event);
+    }
+
+    private void mostrarAlertaExito(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Reporte generado");
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
     }
 }
