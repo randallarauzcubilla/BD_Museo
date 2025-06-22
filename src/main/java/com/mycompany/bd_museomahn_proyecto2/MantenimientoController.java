@@ -1782,6 +1782,7 @@ public class MantenimientoController implements Initializable {
     private void mostrarCamposTematicas() {
         txtCampo1.setVisible(true); // Título
         txtCampo3.setVisible(true); // Época de temática
+        txtCampo3.setEditable(true);
         txtAreaDescripcion.setVisible(true); // Descripción
         cbElegirSalaColeccion.setVisible(true); // Sala asociada a la temática
         btnCargarImagDinamica.setVisible(true);
