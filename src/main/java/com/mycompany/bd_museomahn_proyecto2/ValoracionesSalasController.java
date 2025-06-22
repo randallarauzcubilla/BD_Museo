@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -43,8 +44,10 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import persistencia.Colecciones;
+import persistencia.Especies;
 import persistencia.ImagenesSalas;
 import persistencia.Salas;
+import persistencia.Tematicas;
 import persistencia.Valoraciones;
 
 /**
@@ -83,7 +86,7 @@ public class ValoracionesSalasController implements Initializable {
     @FXML
     private TextField txtTipo;
     @FXML
-    private TextField txtDetalle;
+    private TextArea txtDetalle;
     @FXML
     private Label lbMensajeTitulo;
     @FXML
@@ -121,6 +124,7 @@ public class ValoracionesSalasController implements Initializable {
     private Button btnActivarCampo;
     @FXML
     private Label lbPromedioEstrellas;
+    private List<Especies> especiesAsociadas = new ArrayList<>();
 
     /**
      * Initializes the controller class.
@@ -144,6 +148,21 @@ public class ValoracionesSalasController implements Initializable {
         btnActivarCampo.setVisible(true);
         lbMensajeTitulo2.setVisible(true);
         lbPromedioEstrellas.setVisible(false);
+        stackPaneImagenTipoSalas.setVisible(false);
+        ImagenTipoSalas.setVisible(false);
+        lbMensajeTitulo.setVisible(false);
+        btnIzquierda.setVisible(false);
+        btnDerecha.setVisible(false);
+        btnActivarCampo.setVisible(false);
+        lbMensajeTitulo2.setVisible(false);
+        txtNombreSala.setVisible(false);
+        txtTipoColeccion.setVisible(false);
+        txtTipo.setVisible(false);
+        txtDetalle.setVisible(false);
+        lbMensajeTitul3.setVisible(false);
+        lbMensajeTitulo4.setVisible(false);
+        lbMensajeTitulo5.setVisible(false);
+        lbMensajeTitulo6.setVisible(false);
     }
 
     @FXML
@@ -273,16 +292,30 @@ public class ValoracionesSalasController implements Initializable {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", null, "No se encontró la sala con id: " + idSala);
             return;
         }
+        stackPaneImagenTipoSalas.setVisible(true);
+        ImagenTipoSalas.setVisible(true);
+        lbMensajeTitulo.setVisible(true);
+        btnIzquierda.setVisible(true);
+        btnDerecha.setVisible(true);
+        btnActivarCampo.setVisible(true);
+        lbMensajeTitulo2.setVisible(true);
+        txtNombreSala.setVisible(true);
+        txtTipoColeccion.setVisible(true);
+        txtTipo.setVisible(true);
+        txtDetalle.setVisible(true);
+        lbMensajeTitul3.setVisible(true);
+        lbMensajeTitulo4.setVisible(true);
+        lbMensajeTitulo5.setVisible(true);
+        lbMensajeTitulo6.setVisible(true);
         cargarDatosSalaEnVista(sala);
     }
 
     private void mostrarImagenActual() {
-        if (imagenesSalaActual != null && !imagenesSalaActual.isEmpty() && indiceImagenActual >= 0 && indiceImagenActual < imagenesSalaActual.size()) {
+        if (imagenesSalaActual != null && !imagenesSalaActual.isEmpty()
+                && indiceImagenActual >= 0 && indiceImagenActual < imagenesSalaActual.size()) {
             ImagenesSalas imagen = imagenesSalaActual.get(indiceImagenActual);
-
             File archivoImagen = new File(imagen.getUrlImagen());
 
-            // Verifica si el archivo existe
             if (archivoImagen.exists()) {
                 System.out.println("Imagen encontrada en: " + archivoImagen.getAbsolutePath());
                 Image img = new Image(archivoImagen.toURI().toString());
@@ -396,9 +429,9 @@ public class ValoracionesSalasController implements Initializable {
             e.printStackTrace();
         }
         txtDescripcionValoracion.setVisible(false);
-         btnActivarCampo.setVisible(false);
-         btnGuardar.setVisible(false);
-          lbMensajeTitulo2.setVisible(false);
+        btnActivarCampo.setVisible(false);
+        btnGuardar.setVisible(false);
+        lbMensajeTitulo2.setVisible(false);
     }
 
     private int obtenerIdSalaDeQR() {
@@ -455,23 +488,39 @@ public class ValoracionesSalasController implements Initializable {
     private void cargarDatosSalaEnVista(Salas sala) {
         if (sala != null) {
             txtNombreSala.setText(sala.getNombre());
-
-            StringBuilder nombresColecciones = new StringBuilder();
-            for (Colecciones c : sala.getColeccionesCollection()) {
-                nombresColecciones.append("• ").append(c.getNombreColeccion()).append("\n");
-            }
-
-            txtTipoColeccion.setText(nombresColecciones.toString());
             txtTipo.setText(sala.getIdMuseo().getTipo());
-            txtDetalle.setText(sala.getIdMuseo().getSitioWeb());
-
+            // Mostrar colecciones o nombre de temática
+            if (!sala.getColeccionesCollection().isEmpty()) {
+                StringBuilder nombresColecciones = new StringBuilder();
+                for (Colecciones c : sala.getColeccionesCollection()) {
+                    nombresColecciones.append("• ").append(c.getNombreColeccion()).append("\n");
+                }
+                txtTipoColeccion.setText(nombresColecciones.toString());
+            } else if (!sala.getTematicasCollection().isEmpty()) {
+                Tematicas t = sala.getTematicasCollection().iterator().next();
+                txtTipoColeccion.setText("Temática: " + t.getNombreDeTematica());
+            } else {
+                txtTipoColeccion.setText("Sin colección o temática");
+            }
+            if (!sala.getTematicasCollection().isEmpty()) {
+                Tematicas t = sala.getTematicasCollection().iterator().next();
+                txtDetalle.setText(t.getCaracteristicas());
+            } else if (!sala.getColeccionesCollection().isEmpty()) {
+                for (Colecciones c : sala.getColeccionesCollection()) {
+                    if (c.getDescripcion() != null && !c.getDescripcion().trim().isEmpty()) {
+                        txtDetalle.setText(c.getDescripcion().trim());
+                        break;
+                    }
+                }
+            } else {
+                txtDetalle.setText("Sin detalles disponibles.");
+            }
             imagenesSalaActual = imagenesSalasDAO.findBySala(sala.getIdSala());
             indiceImagenActual = 0;
-
             if (imagenesSalaActual != null && !imagenesSalaActual.isEmpty()) {
                 mostrarImagenActual();
             } else {
-                ImagenTipoSalas.setImage(null); // o alguna imagen por defecto
+                ImagenTipoSalas.setImage(null);
             }
             double promedio = calcularPromedioValoracion(sala);
             mostrarPromedioValoracion(promedio);
