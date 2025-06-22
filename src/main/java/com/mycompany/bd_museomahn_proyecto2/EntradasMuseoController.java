@@ -11,10 +11,12 @@ import controladores.MuseosJpaController;
 import controladores.PreciosJpaController;
 import controladores.RegistroComisionesJpaController;
 import controladores.SalasJpaController;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -337,14 +339,26 @@ public class EntradasMuseoController implements Initializable {
         int alto = 200;
         String formato = "png";
 
+        Path rutaSalida = Paths.get(
+                "C:\\Users\\randa\\OneDrive\\Documents\\NetBeansProjects\\BD_MuseoMAHN_Proyecto2\\QRsVentas",
+                nombreArchivo + "." + formato
+        );
+        File carpetaDestino = rutaSalida.getParent().toFile();
+        if (!carpetaDestino.exists()) {
+            mostrarAlerta(Alert.AlertType.ERROR,
+                    "Ruta inválida",
+                    "No se pudo generar el código QR",
+                    "La carpeta de destino no existe:\n" + carpetaDestino.getAbsolutePath()
+                    + "\n\nPor favor modifique la ruta en el método 'generarCodigoQR' en EntradasMuseoController (línea 335).");
+            return;
+        }
         BitMatrix matriz = new MultiFormatWriter().encode(
                 texto,
                 BarcodeFormat.QR_CODE,
                 ancho,
                 alto
         );
-        java.nio.file.Path rutaSalida = Paths.get("C:\\Users\\randa\\OneDrive\\Documents\\NetBeansProjects\\BD_MuseoMAHN_Proyecto2\\QRsVentas", nombreArchivo + "." + formato);
-        MatrixToImageWriter.writeToPath(matriz, formato, (java.nio.file.Path) rutaSalida);
+        MatrixToImageWriter.writeToPath(matriz, formato, rutaSalida);
         System.out.println("QR guardado en: " + rutaSalida);
     }
 
