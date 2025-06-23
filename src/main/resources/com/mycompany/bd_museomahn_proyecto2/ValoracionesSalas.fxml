@@ -5,6 +5,9 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.effect.Reflection?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
@@ -13,16 +16,29 @@
 
 <Pane fx:id="vistaValoraciones" prefHeight="740.0" prefWidth="1100.0" style="-fx-background-color: blue sky;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.bd_museomahn_proyecto2.ValoracionesSalasController">
    <children>
-      <Button fx:id="btnVolver" layoutX="27.0" layoutY="637.0" mnemonicParsing="false" onAction="#btnVolverOnAction" prefHeight="48.0" prefWidth="123.0" text="VOLVER" />
+      <ImageView fitHeight="746.0" fitWidth="1109.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../Imagenes/fondo.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="755.0" fitWidth="781.0" layoutX="-6.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../Imagenes/fnddegrad.png" />
+         </image>
+      </ImageView>
+      <Button fx:id="btnVolver" layoutX="123.0" layoutY="639.0" mnemonicParsing="false" onAction="#btnVolverOnAction" prefHeight="48.0" prefWidth="123.0" text="VOLVER" />
       <StackPane fx:id="stackPaneQRSalas" layoutX="400.0" layoutY="123.0" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: silver;">
          <children>
             <ImageView fx:id="imagenQRSalas" fitHeight="200.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true" />
          </children>
       </StackPane>
-      <Label layoutX="337.0" layoutY="50.0" text="VALORACIÓN DE SALAS" textFill="#efecec">
+      <Label layoutX="337.0" layoutY="25.0" text="VALORACIÓN DE SALAS" textFill="#efecec">
          <font>
             <Font name="Arial Black" size="33.0" />
          </font>
+         <effect>
+            <Reflection />
+         </effect>
       </Label>
       <Label layoutX="449.0" layoutY="100.0" text="LEA SU CÓDIGO QR AQUÍ:" textFill="#e7e3e3">
          <font>
@@ -46,34 +62,49 @@
       </Button>
       <Label fx:id="lbMensajeTitulo" layoutX="187.0" layoutY="310.0" text="ESPECIES/TEMÁTICAS" textFill="#e4e0e0">
          <font>
-            <Font size="18.0" />
+            <Font name="System Bold Italic" size="18.0" />
          </font>
       </Label>
       <TextArea fx:id="txtDescripcionValoracion" layoutX="584.0" layoutY="421.0" prefHeight="132.0" prefWidth="472.0" />
       <Label fx:id="lbMensajeTitulo2" layoutX="663.0" layoutY="387.0" prefHeight="34.0" prefWidth="272.0" text="DESEA AGRAGAR UNA VALORACIÓN?" textFill="#e4e1e1">
          <font>
-            <Font size="16.0" />
+            <Font name="System Bold" size="14.0" />
          </font>
+         <effect>
+            <DropShadow />
+         </effect>
       </Label>
       <Label fx:id="lbMensajeTitulo6" layoutX="721.0" layoutY="282.0" text="DETALLE:" textFill="#f4f2f2">
          <font>
-            <Font size="19.0" />
+            <Font name="System Bold" size="17.0" />
          </font>
+         <effect>
+            <DropShadow />
+         </effect>
       </Label>
-      <Label fx:id="lbMensajeTitul3" layoutX="720.0" layoutY="122.0" text="NOMBRE:" textFill="#f4f4f4">
+      <Label fx:id="lbMensajeTitul3" layoutX="740.0" layoutY="122.0" text="NOMBRE:" textFill="#f4f4f4">
          <font>
-            <Font size="19.0" />
+            <Font name="System Bold" size="19.0" />
          </font>
+         <effect>
+            <DropShadow />
+         </effect>
       </Label>
-      <Label fx:id="lbMensajeTitulo4" layoutX="710.0" layoutY="177.0" text="COLECCIÓN:" textFill="#eceaea">
+      <Label fx:id="lbMensajeTitulo4" layoutX="730.0" layoutY="177.0" text="COLECCIÓN:" textFill="#eceaea">
          <font>
             <Font size="18.0" />
          </font>
+         <effect>
+            <DropShadow />
+         </effect>
       </Label>
-      <Label fx:id="lbMensajeTitulo5" layoutX="739.0" layoutY="236.0" text="TIPO:" textFill="#f2f2f2">
+      <Label fx:id="lbMensajeTitulo5" layoutX="766.0" layoutY="236.0" text="TIPO:" textFill="#f2f2f2">
          <font>
-            <Font size="18.0" />
+            <Font name="System Bold" size="19.0" />
          </font>
+         <effect>
+            <DropShadow />
+         </effect>
       </Label>
       <TextField fx:id="txtNombreSala" layoutX="842.0" layoutY="116.0" prefHeight="40.0" prefWidth="226.0" />
       <TextField fx:id="txtTipoColeccion" layoutX="842.0" layoutY="170.0" prefHeight="41.0" prefWidth="226.0" />
@@ -84,11 +115,11 @@
       <Button fx:id="btnGuardar" layoutX="587.0" layoutY="572.0" mnemonicParsing="false" onAction="#btnGuardarOnAction" text="GUARDAR" />
       <HBox layoutX="123.0" layoutY="564.0" prefHeight="40.0" prefWidth="300.0">
          <children>
-            <ToggleButton fx:id="btnEstrella1" mnemonicParsing="false" onAction="#btnEstrellaOnAction" prefHeight="26.0" prefWidth="60.0" text="★" textFill="#fff600" />
-            <ToggleButton fx:id="btnEstrella2" mnemonicParsing="false" onAction="#btnEstrellaOnAction" prefHeight="26.0" prefWidth="60.0" text="★" textFill="#fff900" />
-            <ToggleButton fx:id="btnEstrella3" mnemonicParsing="false" onAction="#btnEstrellaOnAction" prefHeight="26.0" prefWidth="60.0" text="★" textFill="#f8fc00" />
-            <ToggleButton fx:id="btnEstrella4" mnemonicParsing="false" onAction="#btnEstrellaOnAction" prefHeight="26.0" prefWidth="60.0" text="★" textFill="#f4e10b" />
-            <ToggleButton fx:id="btnEstrella5" mnemonicParsing="false" onAction="#btnEstrellaOnAction" prefHeight="26.0" prefWidth="60.0" text="★" textFill="#fffd0a" />
+            <ToggleButton fx:id="btnEstrella1" mnemonicParsing="false" onAction="#btnEstrellaOnAction" prefHeight="26.0" prefWidth="60.0" text="★" textFill="#0095ff" />
+            <ToggleButton fx:id="btnEstrella2" mnemonicParsing="false" onAction="#btnEstrellaOnAction" prefHeight="26.0" prefWidth="60.0" text="★" textFill="#005bff" />
+            <ToggleButton fx:id="btnEstrella3" mnemonicParsing="false" onAction="#btnEstrellaOnAction" prefHeight="26.0" prefWidth="60.0" text="★" textFill="#0042fa" />
+            <ToggleButton fx:id="btnEstrella4" mnemonicParsing="false" onAction="#btnEstrellaOnAction" prefHeight="26.0" prefWidth="60.0" text="★" textFill="#0c1cf2" />
+            <ToggleButton fx:id="btnEstrella5" mnemonicParsing="false" onAction="#btnEstrellaOnAction" prefHeight="26.0" prefWidth="60.0" text="★" textFill="#180aff" />
          </children>
       </HBox>
       <Button fx:id="btnActivarCampo" layoutX="939.0" layoutY="388.0" mnemonicParsing="false" onAction="#btnActivarCampoOnAction" prefHeight="25.0" prefWidth="42.0" text="SÍ" />
