@@ -11,56 +11,99 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.effect.Bloom?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.effect.Light.Distant?>
+<?import javafx.scene.effect.Lighting?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 
-<Pane fx:id="ventanaPrincipal" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1000.0" prefWidth="1530.0" style="-fx-background-color: silver;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.bd_museomahn_proyecto2.MantenimientoController">
+<Pane fx:id="ventanaPrincipal" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="969.0" prefWidth="1530.0" style="-fx-background-color: silver;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.bd_museomahn_proyecto2.MantenimientoController">
    <children>
-      <Pane fx:id="paneVistaMantenimiento" layoutX="388.0" layoutY="76.0" prefHeight="740.0" prefWidth="1100.0" style="-fx-background-color: blue sky;">
+      <Pane fx:id="paneVistaMantenimiento" layoutX="296.0" layoutY="76.0" prefHeight="741.0" prefWidth="56.0" style="-fx-background-color: black;">
          <children>
-            <Button fx:id="btnFiltrar" layoutX="751.0" layoutY="102.0" mnemonicParsing="false" onAction="#btnFiltrarOnAction" prefHeight="42.0" prefWidth="114.0" style="-fx-background-color: yellow sky;" text="FILTRAR" />
-            <ComboBox fx:id="cbFiltroElementos" layoutX="513.0" layoutY="105.0" prefHeight="36.0" prefWidth="195.0" />
-            <TextField fx:id="txtFiltroBusqueda" layoutX="192.0" layoutY="105.0" prefHeight="36.0" prefWidth="195.0" />
-            <Label layoutX="99.0" layoutY="111.0" text="FILTRO 1:">
+            <ImageView fitHeight="741.0" fitWidth="1100.0" layoutX="1.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../../Imagenes/fondo.png" />
+               </image>
+            </ImageView>
+            <ImageView fitHeight="740.0" fitWidth="786.0" layoutX="42.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../../Imagenes/fnddegrad.png" />
+               </image>
+            </ImageView>
+            <StackPane fx:id="stackPaneImagDinamica" layoutX="724.0" layoutY="512.0" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: silver;">
+               <children>
+                  <ImageView fx:id="imagenEspecieTematica" fitHeight="180.0" fitWidth="197.0" pickOnBounds="true" preserveRatio="true" />
+               </children>
+            </StackPane>
+            <Label layoutX="414.0" layoutY="111.0" prefHeight="24.0" prefWidth="97.0" text="FILTRO 2:" textFill="WHITE">
                <font>
-                  <Font name="Arial Black" size="16.0" />
+                  <Font name="Cambria Math" size="19.0" />
                </font>
             </Label>
-            <Label layoutX="404.0" layoutY="110.0" prefHeight="24.0" prefWidth="97.0" text="FILTRO 2:">
+            <Button fx:id="btnSalir" layoutX="916.0" layoutY="100.0" mnemonicParsing="false" onAction="#btnSalirOnAction" prefHeight="42.0" prefWidth="114.0" style="-fx-background-color: #4b2d07; -fx-text-fill: white; -fx-padding: 8px; -fx-background-radius: 20;" text="SALIR" textFill="WHITE">
                <font>
-                  <Font name="Arial Black" size="17.0" />
+                  <Font name="Cambria Math" size="15.0" />
+               </font>
+               <effect>
+                  <DropShadow height="42.4" radius="20.7725" spread="0.04" width="42.69">
+                     <color>
+                        <Color red="0.15789473056793213" green="0.15497076511383057" blue="0.15497076511383057" />
+                     </color>
+                  </DropShadow>
+               </effect>
+            </Button>
+            <Button fx:id="btnGuardarImgDinamica" layoutX="955.0" layoutY="578.0" mnemonicParsing="false" onAction="#btnGuardarImgDinamicaOnAction" prefHeight="25.0" prefWidth="88.0" style="-fx-background-color: #1e5638; -fx-background-radius: 10;" text="GUARDAR" textFill="#fdfffe">
+               <effect>
+                  <DropShadow />
+               </effect>
+            </Button>
+            <Button fx:id="btnFiltrar" layoutX="788.0" layoutY="100.0" mnemonicParsing="false" onAction="#btnFiltrarOnAction" prefHeight="42.0" prefWidth="114.0" style="-fx-background-color: #4b1107; -fx-background-radius: 20;" text="FILTRAR" textFill="WHITE">
+               <effect>
+                  <DropShadow height="42.0" radius="20.5" width="42.0" />
+               </effect>
+               <font>
+                  <Font name="Cambria Math" size="15.0" />
+               </font>
+            </Button>
+            <ComboBox fx:id="cbTipoEspecieTematica" layoutX="711.0" layoutY="485.0" prefHeight="25.0" prefWidth="226.0" style="-fx-background-radius: 9;" />
+            <ComboBox fx:id="cbFiltroElementos" layoutX="513.0" layoutY="105.0" prefHeight="36.0" prefWidth="195.0" style="-fx-background-radius: 10; -fx-background-color: #939090;" />
+            <TextField fx:id="txtFiltroBusqueda" layoutX="192.0" layoutY="105.0" prefHeight="36.0" prefWidth="195.0" style="-fx-background-radius: 10; -fx-background-color: #939090;" />
+            <Label layoutX="99.0" layoutY="111.0" text="FILTRO 1:" textFill="WHITE">
+               <font>
+                  <Font name="Cambria Math" size="19.0" />
                </font>
             </Label>
             <Label layoutX="281.0" layoutY="14.0" text="MANTENIMIENTO" textFill="#eff0f2">
                <font>
                   <Font name="Arial Black" size="48.0" />
                </font>
+               <effect>
+                  <Bloom />
+               </effect>
             </Label>
-            <Button fx:id="btnEditar" layoutX="621.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnEditarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: gray;" text="EDITAR" />
-            <Button fx:id="btnEliminar" layoutX="729.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnEliminarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: red;" text="ELIMINAR" />
-            <Button fx:id="btnInsertar" layoutX="513.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnInsertarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: white;" text="NUEVO" />
-            <Button fx:id="btnGuardar" layoutX="945.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnGuardarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: green sky;" text="GUARDAR" />
-            <Button fx:id="btnCancelar" layoutX="837.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnCancelarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: orange;" text="CANCELAR" />
-            <DatePicker fx:id="datePickerSelect" layoutX="326.0" layoutY="560.0" prefHeight="36.0" prefWidth="175.0" />
+            <DatePicker fx:id="datePickerSelect" layoutX="326.0" layoutY="560.0" prefHeight="36.0" prefWidth="175.0" style="-fx-background-radius: 15;" />
             <TextField fx:id="txtCampo3" layoutX="99.0" layoutY="506.0" prefHeight="36.0" prefWidth="204.0" />
-            <TextField fx:id="txtCampo5" layoutX="93.0" layoutY="560.0" prefHeight="36.0" prefWidth="224.0" />
+            <TextField fx:id="txtCampo5" layoutX="93.0" layoutY="560.0" prefHeight="36.0" prefWidth="224.0" style="-fx-background-radius: 15;" />
             <TextField fx:id="txtCampo4" layoutX="326.0" layoutY="506.0" prefHeight="36.0" prefWidth="175.0" />
             <TextField fx:id="txtCampo2" layoutX="326.0" layoutY="455.0" prefHeight="36.0" prefWidth="175.0" />
             <TextField fx:id="txtCampo1" layoutX="99.0" layoutY="454.0" prefHeight="36.0" prefWidth="204.0" />
             <TextField fx:id="txtCampo6" layoutX="99.0" layoutY="612.0" prefHeight="36.0" prefWidth="204.0" />
             <TextField fx:id="txtCampo7" layoutX="317.0" layoutY="612.0" prefHeight="36.0" prefWidth="195.0" />
-            <DatePicker fx:id="datePickerSelectAuxiliar" layoutX="109.0" layoutY="562.0" prefHeight="36.0" prefWidth="184.0" />
+            <DatePicker fx:id="datePickerSelectAuxiliar" layoutX="109.0" layoutY="562.0" prefHeight="36.0" prefWidth="184.0" style="-fx-background-radius: 15;" />
             <ComboBox fx:id="cbTipoTarjeta" layoutX="340.0" layoutY="457.0" prefWidth="150.0" />
-            <TextArea fx:id="txtAreaDescripcion" layoutX="99.0" layoutY="620.0" prefHeight="71.0" prefWidth="408.0" />
+            <TextArea fx:id="txtAreaDescripcion" layoutX="99.0" layoutY="620.0" prefHeight="71.0" prefWidth="408.0" style="-fx-background-radius: 15;" />
             <TabPane fx:id="tvVerElementosClases" layoutX="77.0" layoutY="155.0" prefHeight="258.0" prefWidth="973.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
                 <Tab fx:id="tapMuseos" text="MUSEOS">
                      <content>
-                        <TableView fx:id="tvMuseos" prefHeight="230.0" prefWidth="946.0" />
+                        <TableView fx:id="tvMuseos" prefHeight="230.0" prefWidth="832.0" style="-fx-background-radius: 10;" />
                      </content>
                 </Tab>
                 <Tab fx:id="tapSalas" text="SALAS">
@@ -96,73 +139,138 @@
               </tabs>
             </TabPane>
             <ComboBox fx:id="cbTipoMuseo" layoutX="339.0" layoutY="460.0" prefWidth="150.0" />
-            <Button fx:id="btnSalir" layoutX="914.0" layoutY="100.0" mnemonicParsing="false" onAction="#btnSalirOnAction" prefHeight="46.0" prefWidth="114.0" style="-fx-background-color: red;" text="SALIR" textFill="#fafafa">
-               <font>
-                  <Font size="19.0" />
-               </font></Button>
-            <ComboBox fx:id="cbTipoTematicaSalas" layoutX="126.0" layoutY="512.0" prefWidth="150.0" />
+            <ComboBox fx:id="cbTipoTematicaSalas" layoutX="126.0" layoutY="512.0" prefWidth="150.0" style="-fx-background-radius: 15;" />
             <ComboBox fx:id="cbElegirMuseoSalas" layoutX="340.0" layoutY="460.0" prefWidth="150.0" />
-            <ComboBox fx:id="cbElegirSalaColeccion" layoutX="340.0" layoutY="460.0" prefWidth="150.0" />
-            <ComboBox fx:id="cbElegirColeccionEspecies" layoutX="132.0" layoutY="423.0" prefHeight="25.0" prefWidth="343.0" />
-            <ComboBox fx:id="cbPreciosDias" layoutX="130.0" layoutY="460.0" prefWidth="150.0" />
-            <Button fx:id="btnCargarImagDinamica" layoutX="708.0" layoutY="692.0" mnemonicParsing="false" onAction="#btnCargarImagDinamicaOnAction" style="-fx-background-color: white;" text="INSERTAR IMAGEN" />
-            <Button fx:id="btnGuardarImgDinamica" layoutX="830.0" layoutY="692.0" mnemonicParsing="false" onAction="#btnGuardarImgDinamicaOnAction" style="-fx-background-color: green;" text="GUARDAR" />
-            <StackPane fx:id="stackPaneImagDinamica" layoutX="695.0" layoutY="508.0" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: silver;">
-               <children>
-                  <ImageView fx:id="imagenEspecieTematica" fitHeight="180.0" fitWidth="226.0" pickOnBounds="true" preserveRatio="true" />
-               </children>
-            </StackPane>
-            <ComboBox fx:id="cbTipoEspecieTematica" layoutX="697.0" layoutY="479.0" prefHeight="25.0" prefWidth="226.0" />
+            <ComboBox fx:id="cbElegirSalaColeccion" layoutX="340.0" layoutY="460.0" prefWidth="150.0" style="-fx-background-radius: 14;" />
+            <ComboBox fx:id="cbElegirColeccionEspecies" layoutX="132.0" layoutY="423.0" prefHeight="25.0" prefWidth="343.0" style="-fx-background-radius: 13; -fx-background-color: #939090;" />
+            <ComboBox fx:id="cbPreciosDias" layoutX="130.0" layoutY="460.0" prefWidth="150.0" style="-fx-background-radius: 15;" />
+            <Button fx:id="btnCargarImagDinamica" layoutX="940.0" layoutY="537.0" mnemonicParsing="false" onAction="#btnCargarImagDinamicaOnAction" style="-fx-background-color: white; -fx-background-radius: 10;" text="INSERTAR IMAGEN">
+               <effect>
+                  <DropShadow />
+               </effect>
+            </Button>
+            <Button fx:id="btnEditar" layoutX="551.0" layoutY="439.0" mnemonicParsing="false" onAction="#btnEditarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: #39382c; -fx-background-radius: 15;" text="EDITAR" textFill="WHITE">
+               <effect>
+                  <DropShadow height="42.0" radius="20.5" width="42.0" />
+               </effect>
+               <font>
+                  <Font name="Cambria Math" size="15.0" />
+               </font>
+            </Button>
+            <Button fx:id="btnInsertar" layoutX="551.0" layoutY="503.0" mnemonicParsing="false" onAction="#btnInsertarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: white; -fx-label-padding: 8; -fx-background-radius: 15;" text="NUEVO">
+               <font>
+                  <Font name="Cambria Math" size="14.0" />
+               </font>
+               <effect>
+                  <DropShadow height="42.0" radius="20.5" width="42.0" />
+               </effect>
+            </Button>
+            <Button fx:id="btnEliminar" layoutX="680.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnEliminarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: #820909; -fx-background-radius: 15;" text="ELIMINAR" textFill="WHITE">
+               <font>
+                  <Font name="Cambria Math" size="14.0" />
+               </font>
+               <effect>
+                  <DropShadow height="42.0" radius="20.5" width="42.0" />
+               </effect>
+            </Button>
+            <Button fx:id="btnCancelar" layoutX="808.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnCancelarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: #958a03; -fx-background-radius: 15;" text="CANCELAR" textFill="#fffafa">
+               <font>
+                  <Font name="Cambria Math" size="14.0" />
+               </font>
+               <effect>
+                  <DropShadow height="42.0" radius="20.5" width="42.0" />
+               </effect>
+            </Button>
+            <Button fx:id="btnGuardar" layoutX="937.0" layoutY="427.0" mnemonicParsing="false" onAction="#btnGuardarOnAction" prefHeight="42.0" prefWidth="108.0" style="-fx-background-color: #145407; -fx-background-radius: 15;" text="GUARDAR" textFill="WHITE">
+               <font>
+                  <Font size="14.0" />
+               </font>
+               <effect>
+                  <DropShadow height="42.0" radius="20.5" width="42.0" />
+               </effect>
+            </Button>
          </children>
       </Pane>
-      <Pane fx:id="paneOpcionesVista" layoutX="45.0" layoutY="76.0" prefHeight="741.0" prefWidth="343.0" style="-fx-background-color: cyan sky;">
+      <Pane fx:id="paneOpcionesVista" layoutX="45.0" layoutY="76.0" prefHeight="741.0" prefWidth="318.0" style="-fx-background-color: black; -fx-border-color: #261511;">
          <children>
-            <Accordion fx:id="actualizarVista" layoutX="46.0" layoutY="258.0" prefHeight="452.0" prefWidth="249.0">
+            <Accordion fx:id="actualizarVista" layoutX="46.0" layoutY="258.0" prefHeight="258.0" prefWidth="250.0">
               <panes>
                 <TitledPane fx:id="titledPaneMantenimientos" animated="false" text="MANTENIMIENTOS">
                   <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                            <children>
-                              <ComboBox fx:id="cbEntidadesMantenimiento" layoutX="14.0" layoutY="14.0" prefHeight="26.0" prefWidth="221.0" promptText="OPCIONES" />
-                           </children></AnchorPane>
+                              <ComboBox fx:id="cbEntidadesMantenimiento" layoutX="14.0" layoutY="14.0" prefHeight="26.0" prefWidth="221.0" promptText="OPCIONES">
+                                 <effect>
+                                    <DropShadow>
+                                       <color>
+                                          <Color red="0.19122807681560516" green="0.21052631735801697" blue="0.16764132678508759" />
+                                       </color>
+                                    </DropShadow>
+                                 </effect>
+                              </ComboBox>
+                           </children>
+                        </AnchorPane>
                   </content>
                      <font>
-                        <Font name="Arial Black" size="19.0" />
+                        <Font name="Cambria Math" size="23.0" />
                      </font>
                 </TitledPane>
                 <TitledPane fx:id="titledPaneEntradas" animated="false" text="ENTRADAS">
                   <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="108.0" prefWidth="201.0">
                            <children>
-                              <Label fx:id="lbVenderEntrada" layoutX="33.0" layoutY="22.0" prefHeight="26.0" prefWidth="175.0" text="Vender Entrada" textFill="#0f63c4">
+                              <Label fx:id="lbVenderEntrada" layoutX="41.0" layoutY="8.0" prefHeight="42.0" prefWidth="166.0" text="Vender Entrada">
                                  <font>
-                                    <Font name="Arial Black" size="19.0" />
+                                    <Font name="Cambria Math" size="24.0" />
                                  </font>
+                                 <effect>
+                                    <Lighting bumpInput="$null">
+                                       <light>
+                                          <Light.Distant />
+                                       </light>
+                                    </Lighting>
+                                 </effect>
                               </Label>
-                              <Label fx:id="lbValidarEntrada" layoutX="33.0" layoutY="75.0" prefHeight="36.0" prefWidth="195.0" text="Validar Entrada" textFill="#19b43f">
+                              <Label fx:id="lbValidarEntrada" layoutX="41.0" layoutY="45.0" prefHeight="42.0" prefWidth="204.0" text="Validar Entrada" textFill="#486e2a" textOverrun="CENTER_WORD_ELLIPSIS">
                                  <font>
-                                    <Font name="Arial Black" size="19.0" />
+                                    <Font name="Cambria Math" size="24.0" />
                                  </font>
+                                 <effect>
+                                    <DropShadow>
+                                       <color>
+                                          <Color red="0.4655555486679077" green="1.0" blue="0.13333334028720856" />
+                                       </color>
+                                    </DropShadow>
+                                 </effect>
                               </Label>
-                           </children></AnchorPane>
+                           </children>
+                        </AnchorPane>
                   </content>
                      <font>
-                        <Font name="Arial Black" size="22.0" />
+                        <Font name="Cambria Math" size="23.0" />
                      </font>
                 </TitledPane>
                 <TitledPane fx:id="titledPaneValoraciones" animated="false" text="VALORACIONES">
                   <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                            <children>
-                              <Label fx:id="lbValoracionesVista" layoutX="39.0" layoutY="32.0" text="VALORACIONES" textFill="#0f7c7e">
+                              <Label fx:id="lbValoracionesVista" layoutX="39.0" layoutY="32.0" text="VALORACIONES" textFill="#235d5e">
                                  <font>
-                                    <Font name="Arial Black" size="19.0" />
+                                    <Font name="Cambria Math" size="23.0" />
                                  </font>
+                                 <effect>
+                                    <DropShadow>
+                                       <color>
+                                          <Color red="0.01801169663667679" green="0.7841091752052307" blue="0.8105263113975525" />
+                                       </color>
+                                    </DropShadow>
+                                 </effect>
                               </Label>
-                           </children></AnchorPane>
+                           </children>
+                        </AnchorPane>
                   </content>
                      <font>
-                        <Font name="Arial Black" size="20.0" />
+                        <Font name="Cambria Math" size="22.0" />
                      </font>
                 </TitledPane>
                   <TitledPane fx:id="titledPaneReportes" animated="false" layoutX="10.0" layoutY="10.0" text="REPORTES">
@@ -171,20 +279,28 @@
                            <children>
                               <Label fx:id="lbVistaReportes" layoutX="51.0" layoutY="29.0" text="REPORTES PDF" textFill="#b41b1b">
                                  <font>
-                                    <Font name="Arial Black" size="17.0" />
+                                    <Font name="Cambria Math" size="23.0" />
                                  </font>
+                                 <effect>
+                                    <DropShadow>
+                                       <color>
+                                          <Color red="1.0" green="0.5407407283782959" blue="0.5407407283782959" />
+                                       </color>
+                                    </DropShadow>
+                                 </effect>
                               </Label>
-                           </children></AnchorPane>
+                           </children>
+                        </AnchorPane>
                      </content>
                      <font>
-                        <Font name="Arial Black" size="21.0" />
+                        <Font name="Cambria Math" size="23.0" />
                      </font>
                   </TitledPane>
               </panes>
             </Accordion>
-            <ImageView fx:id="LOGOUNA" fitHeight="180.0" fitWidth="224.0" layoutX="60.0" layoutY="36.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fx:id="LOGOUNA1" fitHeight="180.0" fitWidth="224.0" layoutX="61.0" layoutY="42.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@../../../Imagenes/LOGOUNA.png" />
+                  <Image url="@../../../Imagenes/LOGOUNA%20(1).png" />
                </image>
             </ImageView>
          </children>
